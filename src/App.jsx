@@ -20,8 +20,8 @@ function App() {
 
   if (session === undefined) {
     return (
-      <div className="min-h-screen bg-[#131313] flex items-center justify-center">
-        <p className="font-sans uppercase tracking-widest text-[10px] text-gray-500">Loading...</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="font-sans uppercase tracking-widest text-[10px] text-on-surface-variant/40">Loading...</p>
       </div>
     )
   }

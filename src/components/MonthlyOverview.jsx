@@ -10,6 +10,8 @@ const EXPENSE_CATEGORIES = [
   'Car',
   'Clothing',
   'Memberships',
+  'Others',
+  'Vacation',
 ]
 
 const INCOME_CATEGORIES = ['Salary', 'Pocket Money', 'Gifts', 'Side Income']
@@ -77,6 +79,7 @@ export default function MonthlyOverview({ session, onNavigate }) {
 
   const [expStatus, setExpStatus] = useState(null)
   const [incStatus, setIncStatus] = useState(null)
+  const [modal,     setModal]     = useState(null) // 'income' | 'expense' | null
 
   // Date range for current month view
   const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`
@@ -96,7 +99,6 @@ export default function MonthlyOverview({ session, onNavigate }) {
 
   async function fetchExpenses() {
     console.log('[fetchExpenses] querying expenses for user_id:', userId, 'range:', monthStart, '→', monthEnd)
-    // Fetch this month's expenses + all recurring expenses (they appear in every month)
     const [{ data: monthData, error: e1 }, { data: recurringData, error: e2 }] = await Promise.all([
       supabase.from('expenses').select('*').eq('user_id', userId)
         .gte('date', monthStart).lte('date', monthEnd)
@@ -108,7 +110,6 @@ export default function MonthlyOverview({ session, onNavigate }) {
     if (e1) console.error('[fetchExpenses] month query error:', e1)
     if (e2) console.error('[fetchExpenses] recurring query error:', e2)
     if (monthData) {
-      // Merge: dedupe by id so recurring expenses already in this month aren't doubled
       const seen = new Set(monthData.map(r => r.id))
       const extra = (recurringData || []).filter(r => !seen.has(r.id))
       const merged = [...monthData, ...extra].sort((a, b) => b.date.localeCompare(a.date))
@@ -163,7 +164,7 @@ export default function MonthlyOverview({ session, onNavigate }) {
       setExpForm(f => ({ ...f, amount: '', recurring: false, description: '' }))
       fetchExpenses()
       loadDescriptions()
-      setTimeout(() => setExpStatus(null), 2500)
+      setTimeout(() => { setExpStatus(null); setModal(null) }, 1200)
     }
   }
 
@@ -191,7 +192,7 @@ export default function MonthlyOverview({ session, onNavigate }) {
       setIncForm(f => ({ ...f, amount: '', description: '' }))
       fetchIncome()
       loadDescriptions()
-      setTimeout(() => setIncStatus(null), 2500)
+      setTimeout(() => { setIncStatus(null); setModal(null) }, 1200)
     }
   }
 
@@ -241,448 +242,443 @@ export default function MonthlyOverview({ session, onNavigate }) {
     return [...exps, ...incs].sort((a, b) => b.date.localeCompare(a.date))
   }, [expenses, income])
 
-  // Donut chart (r=80, circumference=2π×80≈502.4 — matches the HTML exactly)
+  // Donut chart (r=80, circumference=2π×80≈502.4)
   const circumference = 502.4
   const essentialPct  = totalExpenses > 0 ? typeBreakdown.essential / totalExpenses : 0
   const dashOffset    = circumference * (1 - essentialPct)
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-surface">
 
-      {/* ── SideNavBar Shell (exact from HTML) ── */}
-      <aside className="fixed left-0 top-0 h-full flex flex-col py-8 bg-[#1c1b1b] w-64 z-50">
-        <div className="px-8 mb-12">
-          <h1 className="text-2xl font-serif italic text-[#f2ca50]">FinanceOS</h1>
-          <p className="label-caps text-on-surface-variant opacity-60">Sovereign Curator</p>
+      {/* ── Sidebar ── */}
+      <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
+        <div className="mb-8 px-4 py-2">
+          <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
+          <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
         </div>
-        <nav className="flex-1 flex flex-col gap-1">
-          <a
-            className="flex items-center gap-4 px-8 py-4 text-gray-500 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer"
-            onClick={() => onNavigate('dashboard')}
-          >
+        <nav className="flex-1 space-y-1">
+          <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">dashboard</span>
-            <span className="label-caps">Dashboard</span>
+            <span>Dashboard</span>
           </a>
-          <a className="flex items-center gap-4 px-8 py-4 text-[#f2ca50] border-l-2 border-[#f2ca50] font-bold bg-[#2a2a2a]/50">
+          <a className="flex items-center gap-3 px-4 py-3 text-blue-600 bg-white/50 rounded-xl shadow-sm font-sans text-sm font-medium tracking-tight cursor-pointer">
             <span className="material-symbols-outlined">calendar_month</span>
-            <span className="label-caps">Monthly Overview</span>
+            <span>Overview</span>
           </a>
-          <a
-            className="flex items-center gap-4 px-8 py-4 text-gray-500 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer"
-            onClick={() => onNavigate('portfolio')}
-          >
+          <a onClick={() => onNavigate('portfolio')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">account_balance_wallet</span>
-            <span className="label-caps">Portfolio</span>
+            <span>Portfolio</span>
           </a>
-          <a className="flex items-center gap-4 px-8 py-4 text-gray-500 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer" onClick={() => onNavigate('savings')}>
+          <a onClick={() => onNavigate('savings')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">savings</span>
-            <span className="label-caps">Savings Goals</span>
+            <span>Savings</span>
           </a>
         </nav>
-        <div className="mt-auto px-8 flex flex-col gap-4">
-          <button
-            className="bg-gradient-to-b from-[#f2ca50] to-[#d4af37] text-[#3c2f00] px-6 py-3 label-caps font-bold transition-transform duration-200 active:scale-95"
-            onClick={() => supabase.auth.signOut()}
-          >
-            Sign Out
-          </button>
-          <div className="flex flex-col gap-1">
-            <div className="label-caps text-gray-600 text-[0.6rem] py-1 truncate">{session.user.email}</div>
-            <a className="flex items-center gap-4 py-2 text-gray-500 hover:text-gray-200 transition-colors" href="#">
-              <span className="material-symbols-outlined">settings</span>
-              <span className="label-caps">Settings</span>
-            </a>
-            <a className="flex items-center gap-4 py-2 text-gray-500 hover:text-gray-200 transition-colors" href="#">
-              <span className="material-symbols-outlined">help</span>
-              <span className="label-caps">Support</span>
-            </a>
+        <div className="mt-auto pt-6 border-t border-slate-200/50">
+          <div className="mt-4 flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-sm shrink-0">
+              {initial}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-bold text-on-surface truncate">{session.user.email.split('@')[0]}</span>
+              <button onClick={() => supabase.auth.signOut()} className="text-[10px] text-on-surface-variant hover:text-tertiary transition-colors text-left">Sign out</button>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* ── Main Content Canvas (exact from HTML) ── */}
+      {/* ── Main ── */}
       <main className="flex-1 ml-64 min-h-screen flex flex-col">
 
-        {/* ── TopNavBar Shell ── */}
-        <header className="flex justify-between items-center w-full px-12 py-8 bg-[#131313]/80 backdrop-blur-xl sticky top-0 z-40">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4 text-[#f2ca50]">
-              <button className="p-2 hover:bg-[#2a2a2a] transition-colors" onClick={prevMonth}>
-                <span className="material-symbols-outlined">chevron_left</span>
+        {/* ── Header ── */}
+        <header className="flex justify-between items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 text-on-surface">
+              <button className="p-2 hover:bg-surface-container transition-colors rounded-xl" onClick={prevMonth}>
+                <span className="material-symbols-outlined text-on-surface-variant">chevron_left</span>
               </button>
-              <h2 className="serif-italic text-3xl">{MONTH_NAMES[month]} {year}</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight text-on-surface">{MONTH_NAMES[month]} {year}</h2>
               <button
-                className="p-2 hover:bg-[#2a2a2a] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-2 hover:bg-surface-container transition-colors rounded-xl disabled:opacity-30 disabled:cursor-not-allowed"
                 onClick={nextMonth}
                 disabled={isCurrentMonth}
               >
-                <span className="material-symbols-outlined">chevron_right</span>
+                <span className="material-symbols-outlined text-on-surface-variant">chevron_right</span>
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <button className="text-gray-400 hover:text-[#f2ca50] transition-colors">
+          <div className="flex items-center gap-4">
+            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
               <span className="material-symbols-outlined">notifications</span>
             </button>
-            <button className="text-gray-400 hover:text-[#f2ca50] transition-colors">
+            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
               <span className="material-symbols-outlined">settings</span>
             </button>
-            <div className="w-10 h-10 bg-[#2a2a2a] flex items-center justify-center text-[#f2ca50] font-bold text-sm">
-              {initial}
-            </div>
           </div>
         </header>
 
-        <div className="px-12 pb-24 space-y-12">
+        <div className="px-8 py-10 max-w-7xl mx-auto space-y-12 w-full">
 
-          {/* ── Summary Cards (exact from HTML) ── */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-surface-container-low p-8 relative overflow-hidden">
-              <p className="label-caps text-on-surface-variant opacity-60 mb-2">Total Income</p>
-              <h3 className="serif-italic text-4xl text-tertiary">{fmt(totalIncome)}</h3>
-              <div className="absolute -right-4 -bottom-4 opacity-5 text-tertiary">
-                <span className="material-symbols-outlined text-8xl">trending_up</span>
+          {/* ── Page Heading ── */}
+          <section className="flex justify-between items-end">
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">{MONTH_NAMES[month]} Overview</h1>
+              <p className="text-on-surface-variant/70 font-medium">Monthly financial curation &amp; health report.</p>
+            </div>
+          </section>
+
+          {/* ── Summary Cards ── */}
+          <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Net Balance — large */}
+            <div className="md:col-span-2 bg-surface-container-lowest p-8 rounded-[2rem] flex flex-col justify-between shadow-sm">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60">Net Monthly Balance</span>
+                <div className="flex items-baseline gap-3 mt-2">
+                  <span className={`text-5xl font-extrabold tracking-tighter ${balance >= 0 ? 'text-on-surface' : 'text-tertiary'}`}>
+                    {balance >= 0 ? '' : '- '}{fmt(Math.abs(balance))}
+                  </span>
+                </div>
+              </div>
+              <div className="h-16 w-full whisper-graph mt-4 rounded-xl overflow-hidden relative">
+                <div className="absolute inset-0 flex items-end">
+                  <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 40">
+                    <path d="M0,40 Q15,10 30,25 T60,15 T100,30 V40 H0 Z" fill="#0058bc" fillOpacity="0.1" stroke="#0058bc" strokeWidth="0.5" />
+                  </svg>
+                </div>
               </div>
             </div>
-            <div className="bg-surface-container-low p-8 relative overflow-hidden">
-              <p className="label-caps text-on-surface-variant opacity-60 mb-2">Total Expenses</p>
-              <h3 className="serif-italic text-4xl text-error">{fmt(totalExpenses)}</h3>
-              <div className="absolute -right-4 -bottom-4 opacity-5 text-error">
-                <span className="material-symbols-outlined text-8xl">trending_down</span>
+            {/* Income */}
+            <div className="bg-surface-container-low p-6 rounded-[2rem] flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60">Total Income</span>
+                  <h2 className="text-3xl font-bold tracking-tight text-on-surface mt-1">{fmt(totalIncome)}</h2>
+                </div>
+                <button
+                  onClick={() => setModal('income')}
+                  className="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary/20 transition-colors"
+                  title="Record Income"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                </button>
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <span className="material-symbols-outlined text-secondary">arrow_upward</span>
+                <span className="text-xs font-medium text-on-surface-variant">{income.length} sources</span>
               </div>
             </div>
-            <div className="bg-surface-container-low p-8 relative overflow-hidden border-b-2 border-[#f2ca50]">
-              <p className="label-caps text-on-surface-variant opacity-60 mb-2">Net Balance</p>
-              <h3 className={`serif-italic text-4xl ${balance >= 0 ? 'text-[#f2ca50]' : 'text-error'}`}>
-                {balance >= 0 ? '' : '- '}{fmt(Math.abs(balance))}
-              </h3>
-              <div className="absolute -right-4 -bottom-4 opacity-5 text-[#f2ca50]">
-                <span className="material-symbols-outlined text-8xl">account_balance</span>
+            {/* Expenses */}
+            <div className="bg-surface-container-low p-6 rounded-[2rem] flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant/60">Total Expenses</span>
+                  <h2 className="text-3xl font-bold tracking-tight text-tertiary mt-1">{fmt(totalExpenses)}</h2>
+                </div>
+                <button
+                  onClick={() => setModal('expense')}
+                  className="w-8 h-8 rounded-full bg-tertiary/10 text-tertiary flex items-center justify-center hover:bg-tertiary/20 transition-colors"
+                  title="Record Expense"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                </button>
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <span className="material-symbols-outlined text-tertiary">arrow_downward</span>
+                <span className="text-xs font-medium text-on-surface-variant">{expenses.length} transactions</span>
               </div>
             </div>
           </section>
 
-          {/* ── Forms Section ── */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* ── Transaction Hub ── */}
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-            {/* Add Income */}
-            <div className="bg-surface-container-low p-10 space-y-8">
-              <h4 className="serif-italic text-2xl border-b border-outline-variant pb-4">Income</h4>
-              <form onSubmit={handleAddIncome} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="label-caps">Amount (€)</label>
-                    <input
-                      className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-xl py-2 outline-none"
-                      placeholder="0.00" step="0.01" type="number" min="0.01"
-                      value={incForm.amount}
-                      onChange={e => setIncForm(f => ({ ...f, amount: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="label-caps">Origin</label>
-                    <select
-                      className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-sm py-2 appearance-none"
-                      value={incForm.category}
-                      onChange={e => setIncForm(f => ({ ...f, category: e.target.value }))}
-                    >
-                      {INCOME_CATEGORIES.map(cat => (
-                        <option key={cat} value={cat} className="bg-[#2a2a2a]">{cat}</option>
-                      ))}
-                    </select>
-                  </div>
+            {/* Financial Ledger */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold tracking-tight text-on-surface">Financial Ledger</h3>
+                <div className="flex gap-2">
+                  <span className="text-xs font-bold text-on-surface-variant border border-outline-variant/30 px-3 py-1.5 rounded-lg bg-surface-container-lowest">
+                    {transactions.length} entries
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="label-caps">Recurring Status</label>
-                    <div className="flex items-center gap-4 py-2">
-                      <span className="label-caps opacity-60">No</span>
-                      <div
-                        className="w-12 h-6 bg-[#2a2a2a] rounded-full relative cursor-pointer group"
-                        onClick={() => setIncForm(f => ({ ...f, recurring: !f.recurring }))}
-                      >
-                        <div className={`absolute top-1 w-4 h-4 transition-all duration-200 ${incForm.recurring ? 'left-7 bg-[#f2ca50]' : 'left-1 bg-[#99907c]'}`} />
+              </div>
+
+              {dataLoading ? (
+                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold py-8">Loading...</p>
+              ) : transactions.length === 0 ? (
+                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold py-8">
+                  No records for {MONTH_NAMES[month]} {year}.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map(tx => (
+                    <div key={`${tx.kind}-${tx.id}`} className="flex items-center justify-between p-5 bg-surface-container-lowest rounded-2xl hover:scale-[1.01] transition-transform cursor-pointer group border border-outline-variant/5">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${tx.kind === 'income' ? 'bg-secondary-container/20 text-secondary' : 'bg-surface-container text-on-surface-variant'}`}>
+                          <span className="material-symbols-outlined">
+                            {tx.kind === 'income' ? 'work' : 'shopping_bag'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-on-surface">{tx.description || tx.category}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {tx.recurring && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant flex items-center gap-1">
+                                <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>sync</span> RECURRING
+                              </span>
+                            )}
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${tx.kind === 'income' ? 'bg-secondary-container/20 text-on-secondary-container' : tx.type === 'Essential' ? 'bg-secondary-container/20 text-on-secondary-container' : 'bg-tertiary-container/10 text-tertiary'}`}>
+                              {tx.kind === 'income' ? 'INCOME' : tx.type?.toUpperCase() || 'EXPENSE'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <span className="label-caps opacity-60">Yes</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="label-caps">Date</label>
-                    <input
-                      className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-sm py-2"
-                      type="date"
-                      value={incForm.date}
-                      onChange={e => setIncForm(f => ({ ...f, date: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="label-caps">Description</label>
-                  <input
-                    className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-sm py-2"
-                    placeholder="Source details..." type="text"
-                    value={incForm.description}
-                    onChange={e => setIncForm(f => ({ ...f, description: e.target.value }))}
-                    list="inc-desc-list" autoComplete="off"
-                  />
-                  <datalist id="inc-desc-list">
-                    {pastIncDescs.map(d => <option key={d} value={d} />)}
-                  </datalist>
-                </div>
-                <button
-                  className="w-full py-4 bg-[#2a2a2a] hover:bg-[#353534] transition-colors text-[#b6d5cb] label-caps border border-[#b6d5cb]/20 disabled:opacity-50"
-                  type="submit" disabled={incStatus === 'loading'}
-                >
-                  {incStatus === 'loading' ? 'Processing...'
-                    : incStatus === 'success' ? '✓ Income Recorded'
-                    : incStatus === 'error'   ? 'Error — Try Again'
-                    : 'Confirm Influx'}
-                </button>
-              </form>
-            </div>
-
-            {/* Add Expense */}
-            <div className="bg-surface-container-low p-10 space-y-8">
-              <h4 className="serif-italic text-2xl border-b border-outline-variant pb-4">Expenses</h4>
-              <form onSubmit={handleAddExpense} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="label-caps">Amount (€)</label>
-                    <input
-                      className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-xl py-2 outline-none"
-                      placeholder="0.00" step="0.01" type="number" min="0.01"
-                      value={expForm.amount}
-                      onChange={e => setExpForm(f => ({ ...f, amount: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="label-caps">Category</label>
-                    <select
-                      className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-sm py-2 appearance-none"
-                      value={expForm.category}
-                      onChange={e => setExpForm(f => ({ ...f, category: e.target.value }))}
-                    >
-                      {EXPENSE_CATEGORIES.map(cat => (
-                        <option key={cat} value={cat} className="bg-[#2a2a2a]">{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="label-caps">Classification</label>
-                    <div className="flex gap-2">
-                      <button
-                        className={`flex-1 py-2 border label-caps ${expForm.type === 'Essential' ? 'border-[#f2ca50] text-[#f2ca50] bg-[#f2ca50]/10' : 'border-outline-variant text-on-surface-variant hover:border-outline transition-colors'}`}
-                        type="button"
-                        onClick={() => setExpForm(f => ({ ...f, type: 'Essential' }))}
-                      >
-                        Essential
-                      </button>
-                      <button
-                        className={`flex-1 py-2 border label-caps ${expForm.type === 'Useless' ? 'border-[#ffb4ab] text-[#ffb4ab] bg-[#ffb4ab]/10' : 'border-outline-variant text-on-surface-variant hover:border-outline transition-colors'}`}
-                        type="button"
-                        onClick={() => setExpForm(f => ({ ...f, type: 'Useless' }))}
-                      >
-                        Useless
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="label-caps">Date</label>
-                    <input
-                      className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-sm py-2"
-                      type="date"
-                      value={expForm.date}
-                      onChange={e => setExpForm(f => ({ ...f, date: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="label-caps">Recurring Status</label>
-                    <div className="flex items-center gap-4 py-2">
-                      <span className="label-caps opacity-60">No</span>
-                      <div
-                        className="w-12 h-6 bg-[#2a2a2a] rounded-full relative cursor-pointer"
-                        onClick={() => setExpForm(f => ({ ...f, recurring: !f.recurring }))}
-                      >
-                        <div className={`absolute top-1 w-4 h-4 transition-all duration-200 ${expForm.recurring ? 'left-7 bg-[#f2ca50]' : 'left-1 bg-[#99907c]'}`} />
-                      </div>
-                      <span className="label-caps opacity-60">Yes</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="label-caps">Description</label>
-                  <input
-                    className="w-full bg-transparent border-b border-outline focus:border-[#f2ca50] focus:ring-0 text-sm py-2"
-                    placeholder="Transaction details..." type="text"
-                    value={expForm.description}
-                    onChange={e => setExpForm(f => ({ ...f, description: e.target.value }))}
-                    list="exp-desc-list" autoComplete="off"
-                  />
-                  <datalist id="exp-desc-list">
-                    {pastExpDescs.map(d => <option key={d} value={d} />)}
-                  </datalist>
-                </div>
-                <button
-                  className="w-full py-4 bg-[#2a2a2a] hover:bg-[#353534] transition-colors text-[#ffb4ab] label-caps border border-[#ffb4ab]/20 disabled:opacity-50"
-                  type="submit" disabled={expStatus === 'loading'}
-                >
-                  {expStatus === 'loading' ? 'Processing...'
-                    : expStatus === 'success' ? '✓ Expense Recorded'
-                    : expStatus === 'error'   ? 'Error — Try Again'
-                    : 'Authorize Expense'}
-                </button>
-              </form>
-            </div>
-          </section>
-
-          {/* ── Analysis Section (exact from HTML) ── */}
-          <section className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-
-            {/* Category Distribution */}
-            <div className="xl:col-span-2 bg-surface-container-low p-10 space-y-10">
-              <h4 className="serif-italic text-2xl">Category Distribution</h4>
-              {categoryBreakdown.length > 0 ? (
-                <div className="space-y-8">
-                  {categoryBreakdown.map(([cat, amt]) => (
-                    <div key={cat} className="space-y-2">
-                      <div className="flex justify-between label-caps">
-                        <span>{cat}</span>
-                        <span>{fmt(amt)}</span>
-                      </div>
-                      <div className="h-1 bg-[#2a2a2a] w-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#f2ca50]"
-                          style={{ width: `${((amt / totalExpenses) * 100).toFixed(1)}%` }}
-                        />
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className={`font-bold ${tx.kind === 'income' ? 'text-secondary' : 'text-tertiary'}`}>
+                            {tx.kind === 'income' ? '+' : '-'}{fmt(tx.amount)}
+                          </p>
+                          <p className="text-[10px] font-medium text-on-surface-variant/50">{fmtDate(tx.date)}</p>
+                        </div>
+                        <button
+                          onClick={() => handleDelete(tx)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-tertiary p-1 rounded-lg"
+                          title="Delete record"
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="label-caps text-on-surface-variant opacity-40">No expenses recorded this month.</p>
               )}
             </div>
 
-            {/* Value Intent Ratio (exact SVG from HTML) */}
-            <div className="bg-surface-container-low p-10 flex flex-col items-center justify-center space-y-8">
-              <h4 className="serif-italic text-2xl text-center">Value Intent Ratio</h4>
-              <div className="relative w-48 h-48 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="96" cy="96" fill="transparent" r="80" stroke="#2a2a2a" strokeWidth="4" />
-                  <circle
-                    cx="96" cy="96" fill="transparent" r="80"
-                    stroke="#f2ca50"
-                    strokeDasharray="502.4"
-                    strokeDashoffset={dashOffset}
-                    strokeWidth="4"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="serif-italic text-3xl">
-                    {totalExpenses > 0 ? `${(essentialPct * 100).toFixed(0)}%` : '—'}
-                  </span>
-                  <span className="label-caps text-[0.6rem] opacity-50">Essential</span>
-                </div>
-              </div>
-              <div className="w-full space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-[#f2ca50]" />
-                    <span className="label-caps">Essential</span>
-                  </div>
-                  <span className="label-caps">{fmt(typeBreakdown.essential)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-[#2a2a2a]" />
-                    <span className="label-caps">Useless</span>
-                  </div>
-                  <span className="label-caps">{fmt(typeBreakdown.useless)}</span>
-                </div>
-              </div>
-            </div>
-          </section>
+            {/* Curation & Entry Column */}
+            <div className="space-y-8">
 
-          {/* ── Recent Transactions (exact from HTML) ── */}
-          <section className="space-y-6">
-            <div className="flex justify-between items-end border-b border-outline-variant pb-4">
-              <h4 className="serif-italic text-3xl">Ledger Records</h4>
-              <span className="label-caps text-[#f2ca50]">{transactions.length} entries</span>
-            </div>
-
-            {dataLoading ? (
-              <p className="label-caps text-on-surface-variant opacity-40 py-8">Loading...</p>
-            ) : transactions.length === 0 ? (
-              <p className="label-caps text-on-surface-variant opacity-40 py-8">
-                No records for {MONTH_NAMES[month]} {year}.
-              </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="label-caps text-on-surface-variant border-b border-outline-variant/30" style={{ opacity: 0.4 }}>
-                      <th className="py-4 font-normal">Date</th>
-                      <th className="py-4 font-normal">Description</th>
-                      <th className="py-4 font-normal text-center">Category</th>
-                      <th className="py-4 font-normal text-right">Amount</th>
-                      <th className="py-4 font-normal w-8"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/10">
-                    {transactions.map(tx => (
-                      <tr key={`${tx.kind}-${tx.id}`} className="group hover:bg-surface-container-low transition-colors">
-                        <td className="py-6 label-caps opacity-60">{fmtDate(tx.date)}</td>
-                        <td className="py-6 serif-italic text-lg">
-                          {tx.description || tx.category}
-                          {tx.recurring && (
-                            <span className="ml-2 text-[10px] uppercase tracking-widest text-[#f2ca50] opacity-70 not-italic font-sans">recurring</span>
-                          )}
-                        </td>
-                        <td className="py-6 text-center">
-                          <span className="px-3 py-1 bg-[#2a2a2a] text-[10px] uppercase tracking-widest text-on-surface-variant">
-                            {SHORT_CAT[tx.category] || tx.category}
-                          </span>
-                        </td>
-                        <td className={`py-6 text-right font-medium ${tx.kind === 'income' ? 'text-[#b6d5cb]' : 'text-[#ffb4ab]'}`}>
-                          {tx.kind === 'income' ? '+ ' : '- '}{fmt(tx.amount)}
-                        </td>
-                        <td className="py-6 w-8">
-                          <button
-                            onClick={() => handleDelete(tx)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-[#ffb4ab] p-1"
-                            title="Delete record"
-                          >
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
-                          </button>
-                        </td>
-                      </tr>
+              {/* Category Breakdown */}
+              <div className="bg-surface-container-lowest p-8 rounded-[2rem] space-y-6 shadow-sm">
+                <h3 className="text-lg font-bold tracking-tight text-on-surface">Category Breakdown</h3>
+                {categoryBreakdown.length > 0 ? (
+                  <div className="space-y-5">
+                    {categoryBreakdown.map(([cat, amt]) => (
+                      <div key={cat} className="space-y-2">
+                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                          <span className="text-on-surface">{cat}</span>
+                          <span className="text-on-surface-variant">{totalExpenses > 0 ? `${((amt / totalExpenses) * 100).toFixed(0)}%` : '0%'}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full"
+                            style={{ width: `${((amt / totalExpenses) * 100).toFixed(1)}%` }}
+                          />
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                ) : (
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant/40 font-semibold">No expenses this month.</p>
+                )}
               </div>
-            )}
+
+              {/* Value Intent Ratio */}
+              <div className="bg-surface-container-low p-8 rounded-[2rem] flex flex-col items-center space-y-6">
+                <h3 className="text-lg font-bold tracking-tight text-on-surface self-start">Value Intent Ratio</h3>
+                <div className="relative w-40 h-40 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="80" cy="80" fill="transparent" r="68" stroke="#eeedf3" strokeWidth="8" />
+                    <circle
+                      cx="80" cy="80" fill="transparent" r="68"
+                      stroke="#0058bc"
+                      strokeDasharray={`${2 * Math.PI * 68}`}
+                      strokeDashoffset={`${2 * Math.PI * 68 * (1 - essentialPct)}`}
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-extrabold tracking-tighter">
+                      {totalExpenses > 0 ? `${(essentialPct * 100).toFixed(0)}%` : '—'}
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Essential</span>
+                  </div>
+                </div>
+                <div className="w-full space-y-3">
+                  <div className="flex justify-between items-center bg-surface-container-lowest px-4 py-3 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <span className="w-3 h-3 rounded-full bg-primary"></span>
+                      <span className="text-sm font-semibold">Essential</span>
+                    </div>
+                    <span className="text-sm font-bold">{fmt(typeBreakdown.essential)}</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-surface-container-lowest px-4 py-3 rounded-xl opacity-60">
+                    <div className="flex items-center gap-3">
+                      <span className="w-3 h-3 rounded-full bg-surface-container-highest"></span>
+                      <span className="text-sm font-semibold">Optional</span>
+                    </div>
+                    <span className="text-sm font-bold">{fmt(typeBreakdown.useless)}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </section>
+
         </div>
 
-        {/* ── Footer Shell (exact from HTML) ── */}
-        <footer className="flex flex-col items-center gap-4 w-full py-12 px-8 mt-auto border-t border-[#e5e2e1]/15 bg-[#131313]">
-          <div className="text-sm font-serif italic text-[#f2ca50]">FinanceOS</div>
-          <div className="flex gap-8">
-            <a className="label-caps text-gray-600 hover:text-white transition-colors" href="#">Terms</a>
-            <a className="label-caps text-gray-600 hover:text-white transition-colors" href="#">Privacy</a>
-            <a className="label-caps text-gray-600 hover:text-white transition-colors" href="#">Compliance</a>
-            <a className="label-caps text-gray-600 hover:text-white transition-colors" href="#">Contact</a>
+        {/* ── Modal ── */}
+        {modal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm" onClick={() => setModal(null)}>
+            <div className="w-full max-w-md bg-surface-container-lowest rounded-[2rem] p-8 shadow-xl border border-outline-variant/10 space-y-6" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold tracking-tight text-on-surface">
+                  {modal === 'income' ? 'Record Income' : 'Record Expense'}
+                </h3>
+                <button onClick={() => setModal(null)} className="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+                </button>
+              </div>
+
+              {modal === 'income' ? (
+                <form onSubmit={handleAddIncome} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Amount (€)</label>
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-xl py-4 px-5 text-xl font-bold focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/20"
+                      placeholder="0.00" step="0.01" type="number" min="0.01"
+                      value={incForm.amount}
+                      onChange={e => setIncForm(f => ({ ...f, amount: e.target.value }))}
+                      required autoFocus
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Category</label>
+                    <select
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-5 text-sm focus:ring-1 focus:ring-primary/20"
+                      value={incForm.category}
+                      onChange={e => setIncForm(f => ({ ...f, category: e.target.value }))}
+                    >
+                      {INCOME_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div
+                      onClick={() => setIncForm(f => ({ ...f, recurring: !f.recurring }))}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-xl cursor-pointer transition-colors ${incForm.recurring ? 'bg-primary/10 border border-primary/20' : 'bg-surface-container-low hover:bg-surface-container'}`}
+                    >
+                      <span className={`material-symbols-outlined text-sm ${incForm.recurring ? 'text-primary' : 'text-on-surface-variant'}`}>sync</span>
+                      <span className={`text-xs font-bold ${incForm.recurring ? 'text-primary' : 'text-on-surface-variant'}`}>Recurring</span>
+                    </div>
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20"
+                      type="date" value={incForm.date}
+                      onChange={e => setIncForm(f => ({ ...f, date: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Description</label>
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-5 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/20"
+                      placeholder="Source details..." type="text"
+                      value={incForm.description}
+                      onChange={e => setIncForm(f => ({ ...f, description: e.target.value }))}
+                      list="inc-desc-list" autoComplete="off"
+                    />
+                    <datalist id="inc-desc-list">
+                      {pastIncDescs.map(d => <option key={d} value={d} />)}
+                    </datalist>
+                  </div>
+                  <button
+                    className="w-full bg-secondary text-on-secondary py-4 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-all mt-2 disabled:opacity-50"
+                    type="submit" disabled={incStatus === 'loading'}
+                  >
+                    {incStatus === 'loading' ? 'Processing...' : incStatus === 'success' ? '✓ Income Recorded' : incStatus === 'error' ? 'Error — Try Again' : 'Record Income'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleAddExpense} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Amount (€)</label>
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-xl py-4 px-5 text-xl font-bold focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/20"
+                      placeholder="0.00" step="0.01" type="number" min="0.01"
+                      value={expForm.amount}
+                      onChange={e => setExpForm(f => ({ ...f, amount: e.target.value }))}
+                      required autoFocus
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Category</label>
+                    <select
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-5 text-sm focus:ring-1 focus:ring-primary/20"
+                      value={expForm.category}
+                      onChange={e => setExpForm(f => ({ ...f, category: e.target.value }))}
+                    >
+                      {EXPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-widest rounded-xl border transition-colors ${expForm.type === 'Essential' ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant/30 text-on-surface-variant hover:border-outline'}`}
+                      type="button" onClick={() => setExpForm(f => ({ ...f, type: 'Essential' }))}
+                    >Essential</button>
+                    <button
+                      className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-widest rounded-xl border transition-colors ${expForm.type === 'Useless' ? 'border-tertiary bg-tertiary/5 text-tertiary' : 'border-outline-variant/30 text-on-surface-variant hover:border-outline'}`}
+                      type="button" onClick={() => setExpForm(f => ({ ...f, type: 'Useless' }))}
+                    >Optional</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div
+                      onClick={() => setExpForm(f => ({ ...f, recurring: !f.recurring }))}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-xl cursor-pointer transition-colors ${expForm.recurring ? 'bg-primary/10 border border-primary/20' : 'bg-surface-container-low hover:bg-surface-container'}`}
+                    >
+                      <span className={`material-symbols-outlined text-sm ${expForm.recurring ? 'text-primary' : 'text-on-surface-variant'}`}>sync</span>
+                      <span className={`text-xs font-bold ${expForm.recurring ? 'text-primary' : 'text-on-surface-variant'}`}>Recurring</span>
+                    </div>
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20"
+                      type="date" value={expForm.date}
+                      onChange={e => setExpForm(f => ({ ...f, date: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Description</label>
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-5 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/20"
+                      placeholder="Transaction details..." type="text"
+                      value={expForm.description}
+                      onChange={e => setExpForm(f => ({ ...f, description: e.target.value }))}
+                      list="exp-desc-list" autoComplete="off"
+                    />
+                    <datalist id="exp-desc-list">
+                      {pastExpDescs.map(d => <option key={d} value={d} />)}
+                    </datalist>
+                  </div>
+                  <button
+                    className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-all mt-2 disabled:opacity-50"
+                    type="submit" disabled={expStatus === 'loading'}
+                  >
+                    {expStatus === 'loading' ? 'Processing...' : expStatus === 'success' ? '✓ Expense Recorded' : expStatus === 'error' ? 'Error — Try Again' : 'Record Expense'}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
-          <p className="font-sans text-[10px] uppercase tracking-widest text-gray-600">© FinanceOS. All rights reserved.</p>
+        )}
+
+        {/* ── Footer ── */}
+        <footer className="py-8 px-8 flex flex-col items-center gap-3 border-t border-outline-variant/20 mt-auto bg-surface">
+          <div className="flex gap-8">
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Terms</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Privacy</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Compliance</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Contact</a>
+          </div>
+          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">© FinanceOS. All rights reserved.</p>
         </footer>
 
       </main>

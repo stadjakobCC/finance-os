@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Future Aspirations - The Financial Atelier</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-on-surface": "#f1f0f5",
+                        "tertiary-fixed": "#ffdad5",
+                        "primary": "#0058bc",
+                        "tertiary-container": "#e2241f",
+                        "surface-tint": "#005bc1",
+                        "on-tertiary-fixed": "#410001",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#d8e2ff",
+                        "primary-container": "#0070eb",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1b1f",
+                        "on-tertiary-container": "#fffbff",
+                        "secondary-container": "#6ffb85",
+                        "surface-container-low": "#f4f3f8",
+                        "tertiary-fixed-dim": "#ffb4aa",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#eeedf3",
+                        "on-secondary-fixed": "#002107",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e3e2e7",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1a1b1f",
+                        "outline-variant": "#c1c6d7",
+                        "secondary-fixed": "#72fe88",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#00531c",
+                        "on-surface-variant": "#414755",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary-container": "#00732a",
+                        "surface-variant": "#e3e2e7",
+                        "surface-container-high": "#e9e7ed",
+                        "surface-bright": "#faf9fe",
+                        "outline": "#717786",
+                        "background": "#faf9fe",
+                        "surface-dim": "#dad9df",
+                        "on-tertiary-fixed-variant": "#930005",
+                        "tertiary": "#bc000a",
+                        "inverse-surface": "#2f3034",
+                        "inverse-primary": "#adc6ff",
+                        "on-primary-container": "#fefcff",
+                        "surface": "#faf9fe",
+                        "secondary-fixed-dim": "#53e16f",
+                        "on-primary-fixed-variant": "#004493",
+                        "secondary": "#006e28",
+                        "on-primary-fixed": "#001a41"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+        }
+        .whisper-gradient {
+            background: linear-gradient(180deg, rgba(0, 88, 188, 0.05) 0%, rgba(0, 88, 188, 0) 100%);
+        }
+        .premium-shadow {
+            shadow: 0 32px 64px -12px rgba(26, 27, 31, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col p-4 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-xl h-screen w-64 border-r border-slate-200/50 dark:border-slate-800/50">
+<div class="mb-10 px-4">
+<h1 class="text-lg font-bold tracking-tighter text-slate-900 dark:text-slate-50">The Atelier</h1>
+<p class="text-xs text-on-surface-variant font-medium opacity-70">Premium Member</p>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/80 transition-all font-sans text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/80 transition-all font-sans text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+                Overview
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/80 transition-all font-sans text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+                Portfolio
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-blue-600 dark:text-blue-400 bg-white/50 dark:bg-slate-800/50 rounded-xl shadow-sm font-sans text-sm font-medium tracking-tight scale-95 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="savings" style="font-variation-settings: 'FILL' 1;">savings</span>
+                Savings
+            </a>
+</nav>
+<div class="mt-auto px-2">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                Add Transaction
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-30">
+<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full w-96">
+<span class="material-symbols-outlined text-on-surface-variant mr-3" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-on-surface-variant/50" placeholder="Search accounts..." type="text"/>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full border border-outline-variant/20 object-cover" data-alt="User profile avatar photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARQ5fQm9RUNTR_PsSwa81lDneIhdqAAump9xFF1P1_1VQPBhTfQP2eff4d25IwaSvtzlJIV86zyNjpoQVqw0mtPkUFd2xsHc6IBkOQJSh3TtlmKMXa6A4xRmgPCLkL9OwG8-YjqHe6sG8GHCINUJCy6lfLIYLKSNwbsgy_vsUk1lZqWa9Hr8Lmy-IhzdCsTtufaYqQXeC_jf-TCVnAitIlgnMd77XXNSJUgMWEVKGluGXOAqdRgv5UNhC7gVpfp-Mg7sSiKGClBXU"/>
+</div>
+</div>
+</header>
+<!-- Screen Content -->
+<div class="p-10 max-w-7xl mx-auto w-full">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-12">
+<div>
+<h2 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Future Aspirations</h2>
+<p class="text-on-surface-variant text-lg">Curating your financial milestones with intentionality.</p>
+</div>
+<button class="bg-primary-container text-on-primary-container px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all hover:shadow-xl hover:shadow-primary/20 active:scale-95">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                    Add New Aspiration
+                </button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Main Featured Goal: Dream Home -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-[2rem] p-8 relative overflow-hidden flex flex-col group border border-outline-variant/10 shadow-sm">
+<div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px]" data-icon="home">home</span>
+</div>
+<div class="flex items-start justify-between mb-12">
+<div>
+<span class="bg-secondary-container/20 text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-4 inline-block">ON TRACK</span>
+<h3 class="text-3xl font-bold text-on-surface">Dream Home</h3>
+<p class="text-on-surface-variant">Pacific Heights Estate</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-medium text-on-surface-variant uppercase tracking-widest mb-1">Estimated Date</p>
+<p class="text-xl font-bold text-on-surface">October 2026</p>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-baseline justify-between mb-4">
+<div class="flex items-baseline gap-2">
+<span class="text-5xl font-extrabold tracking-tighter text-on-surface">$842,000</span>
+<span class="text-on-surface-variant font-medium">/ $1,200,000</span>
+</div>
+<span class="text-2xl font-bold text-primary">70%</span>
+</div>
+<!-- Premium Progress Bar -->
+<div class="h-4 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full" style="width: 70%"></div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-outline-variant/10">
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Current Savings</p>
+<p class="text-lg font-bold">$842,000.00</p>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Monthly Yield</p>
+<p class="text-lg font-bold text-secondary">+$4,250.00</p>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Remaining</p>
+<p class="text-lg font-bold text-on-surface/50">$358,000.00</p>
+</div>
+</div>
+</div>
+<!-- Secondary Goal: Tesla Model S -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-[2rem] p-8 border border-outline-variant/10 flex flex-col shadow-sm">
+<div class="flex justify-between items-start mb-8">
+<div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="electric_car">electric_car</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+<h3 class="text-2xl font-bold mb-1">Tesla Model S</h3>
+<p class="text-on-surface-variant text-sm mb-8">Sustainable Mobility Fund</p>
+<div class="mb-6">
+<div class="flex justify-between mb-2">
+<span class="text-sm font-bold">45% Complete</span>
+<span class="text-sm text-on-surface-variant">Dec 2024</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 45%"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-3 border-b border-outline-variant/5">
+<span class="text-sm text-on-surface-variant">Saved</span>
+<span class="font-bold">$40,500</span>
+</div>
+<div class="flex justify-between items-center py-3">
+<span class="text-sm text-on-surface-variant">Goal</span>
+<span class="font-bold">$90,000</span>
+</div>
+</div>
+<button class="mt-auto w-full py-4 rounded-xl border border-primary/20 text-primary font-bold hover:bg-primary/5 transition-colors">
+                        View Allocation
+                    </button>
+</div>
+<!-- Small Goal: Retirement -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-low rounded-[2rem] p-8 flex flex-col">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-xl" data-icon="elderly" style="font-variation-settings: 'FILL' 1;">elderly</span>
+</div>
+<h4 class="font-bold text-xl">Retirement</h4>
+</div>
+<div class="flex items-baseline gap-2 mb-6">
+<span class="text-3xl font-extrabold">$2.4M</span>
+<span class="text-on-surface-variant text-sm">of $5.0M goal</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden mb-6">
+<div class="h-full bg-secondary" style="width: 48%"></div>
+</div>
+<div class="flex justify-between text-xs font-bold text-on-surface-variant uppercase tracking-widest">
+<span>EST. 2045</span>
+<span class="text-secondary">48.2%</span>
+</div>
+</div>
+<!-- Small Goal: Travel Fund -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-low rounded-[2rem] p-8 flex flex-col">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl" data-icon="flight">flight</span>
+</div>
+<h4 class="font-bold text-xl">World Tour</h4>
+</div>
+<div class="flex items-baseline gap-2 mb-6">
+<span class="text-3xl font-extrabold">$18,200</span>
+<span class="text-on-surface-variant text-sm">of $25,000 goal</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden mb-6">
+<div class="h-full bg-primary" style="width: 73%"></div>
+</div>
+<div class="flex justify-between text-xs font-bold text-on-surface-variant uppercase tracking-widest">
+<span>EST. June 2024</span>
+<span class="text-primary">73.0%</span>
+</div>
+</div>
+<!-- Empty State / Add New Card -->
+<div class="col-span-12 lg:col-span-4 border-2 border-dashed border-outline-variant/30 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center hover:bg-surface-container-low/50 hover:border-primary/30 transition-all cursor-pointer group">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="add_circle">add_circle</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-1">New Aspiration</h4>
+<p class="text-on-surface-variant text-sm px-6">What is the next chapter of your financial story?</p>
+</div>
+</div>
+<!-- Strategy Summary Section -->
+<section class="mt-16 bg-surface-container-lowest rounded-[2rem] p-10 border border-outline-variant/10 shadow-sm whisper-gradient">
+<div class="flex items-start gap-12">
+<div class="flex-1">
+<h3 class="text-2xl font-bold mb-4">Savings Velocity</h3>
+<p class="text-on-surface-variant mb-8 leading-relaxed">Your current savings rate of <span class="text-on-surface font-bold">$6,450 / month</span> across all aspirations puts you 4 months ahead of your 2024 targets. Consider diversifying your Tesla fund into the growth portfolio to accelerate the achievement date.</p>
+<div class="flex gap-4">
+<button class="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95">Optimize Allocation</button>
+<button class="bg-surface-container text-on-surface px-6 py-3 rounded-xl font-bold text-sm transition-all hover:bg-surface-container-high active:scale-95">Download Projections</button>
+</div>
+</div>
+<div class="w-64 flex flex-col gap-6">
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/5">
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Total Goal Assets</p>
+<p class="text-3xl font-extrabold tracking-tighter">$3.32M</p>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/5">
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Avg. Completion</p>
+<p class="text-3xl font-extrabold tracking-tighter text-secondary">62.5%</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

@@ -1,121 +1,133 @@
 @import "tailwindcss";
 
-/* ── Tailwind v4 theme (all tokens from Stitch HTML config) ── */
+/* ── Tailwind v4 theme — light Apple-like design from Stitch HTML files ── */
 @theme {
-  /* Primary */
-  --color-primary:                    #f2ca50;
-  --color-primary-container:          #d4af37;
-  --color-primary-fixed:              #ffe088;
-  --color-primary-fixed-dim:          #e9c349;
-  --color-on-primary:                 #3c2f00;
-  --color-on-primary-container:       #554300;
-  --color-on-primary-fixed:           #241a00;
-  --color-on-primary-fixed-variant:   #574500;
-  --color-inverse-primary:            #735c00;
-  --color-surface-tint:               #e9c349;
+  /* Primary — blue */
+  --color-primary:                    #0058bc;
+  --color-primary-container:          #0070eb;
+  --color-primary-fixed:              #d8e2ff;
+  --color-primary-fixed-dim:          #adc6ff;
+  --color-on-primary:                 #ffffff;
+  --color-on-primary-container:       #fefcff;
+  --color-on-primary-fixed:           #001a41;
+  --color-on-primary-fixed-variant:   #004493;
+  --color-inverse-primary:            #adc6ff;
+  --color-surface-tint:               #005bc1;
 
-  /* Secondary */
-  --color-secondary:                  #cec6af;
-  --color-secondary-container:        #4b4735;
-  --color-secondary-fixed:            #eae2ca;
-  --color-secondary-fixed-dim:        #cec6af;
-  --color-on-secondary:               #343020;
-  --color-on-secondary-container:     #bcb59e;
-  --color-on-secondary-fixed:         #1f1c0d;
-  --color-on-secondary-fixed-variant: #4b4735;
+  /* Secondary — green */
+  --color-secondary:                  #006e28;
+  --color-secondary-container:        #6ffb85;
+  --color-secondary-fixed:            #72fe88;
+  --color-secondary-fixed-dim:        #53e16f;
+  --color-on-secondary:               #ffffff;
+  --color-on-secondary-container:     #00732a;
+  --color-on-secondary-fixed:         #002107;
+  --color-on-secondary-fixed-variant: #00531c;
 
-  /* Tertiary */
-  --color-tertiary:                   #b6d5cb;
-  --color-tertiary-container:         #9bb9b0;
-  --color-tertiary-fixed:             #cae9e0;
-  --color-tertiary-fixed-dim:         #afcdc4;
-  --color-on-tertiary:                #1a352f;
-  --color-on-tertiary-container:      #2f4a43;
-  --color-on-tertiary-fixed:          #03201a;
-  --color-on-tertiary-fixed-variant:  #314c45;
+  /* Tertiary — red */
+  --color-tertiary:                   #bc000a;
+  --color-tertiary-container:         #e2241f;
+  --color-tertiary-fixed:             #ffdad5;
+  --color-tertiary-fixed-dim:         #ffb4aa;
+  --color-on-tertiary:                #ffffff;
+  --color-on-tertiary-container:      #fffbff;
+  --color-on-tertiary-fixed:          #410001;
+  --color-on-tertiary-fixed-variant:  #930005;
 
   /* Error */
-  --color-error:                      #ffb4ab;
-  --color-error-container:            #93000a;
-  --color-on-error:                   #690005;
-  --color-on-error-container:         #ffdad6;
+  --color-error:                      #ba1a1a;
+  --color-error-container:            #ffdad6;
+  --color-on-error:                   #ffffff;
+  --color-on-error-container:         #93000a;
 
   /* Background */
-  --color-background:                 #131313;
-  --color-on-background:              #e5e2e1;
+  --color-background:                 #faf9fe;
+  --color-on-background:              #1a1b1f;
 
-  /* Surface */
-  --color-surface:                    #131313;
-  --color-surface-dim:                #131313;
-  --color-surface-bright:             #393939;
-  --color-surface-variant:            #353534;
-  --color-surface-container-lowest:   #0e0e0e;
-  --color-surface-container-low:      #1c1b1b;
-  --color-surface-container:          #201f1f;
-  --color-surface-container-high:     #2a2a2a;
-  --color-surface-container-highest:  #353534;
-  --color-on-surface:                 #e5e2e1;
-  --color-on-surface-variant:         #d0c5af;
-  --color-inverse-surface:            #e5e2e1;
-  --color-inverse-on-surface:         #313030;
+  /* Surface — light */
+  --color-surface:                    #faf9fe;
+  --color-surface-dim:                #dad9df;
+  --color-surface-bright:             #faf9fe;
+  --color-surface-variant:            #e3e2e7;
+  --color-surface-container-lowest:   #ffffff;
+  --color-surface-container-low:      #f4f3f8;
+  --color-surface-container:          #eeedf3;
+  --color-surface-container-high:     #e9e7ed;
+  --color-surface-container-highest:  #e3e2e7;
+  --color-on-surface:                 #1a1b1f;
+  --color-on-surface-variant:         #414755;
+  --color-inverse-surface:            #2f3034;
+  --color-inverse-on-surface:         #f1f0f5;
 
   /* Outline */
-  --color-outline:                    #99907c;
-  --color-outline-variant:            #4d4635;
+  --color-outline:                    #717786;
+  --color-outline-variant:            #c1c6d7;
 
-  /* Fonts */
-  --font-headline: "Newsreader", serif;
+  /* Fonts — Inter only */
+  --font-headline: "Inter", sans-serif;
   --font-body:     "Inter", sans-serif;
   --font-label:    "Inter", sans-serif;
 
-  /* Border radius — all sharp except full */
-  --radius:    0rem;
-  --radius-sm: 0rem;
-  --radius-md: 0rem;
-  --radius-lg: 0rem;
-  --radius-xl: 0rem;
-  --radius-2xl: 0rem;
-  --radius-3xl: 0rem;
+  /* Border radius */
+  --radius:     0.25rem;
+  --radius-sm:  0.25rem;
+  --radius-md:  0.5rem;
+  --radius-lg:  0.5rem;
+  --radius-xl:  0.75rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
   --radius-full: 9999px;
 }
 
-/* ── Exact CSS from Stitch HTML <style> tag ── */
+/* ── Global styles ── */
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    font-size: 20px;
 }
+
 body {
-    background-color: #131313;
-    color: #e5e2e1;
+    background-color: #faf9fe;
+    color: #1a1b1f;
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
 }
+
+/* Legacy class — now uses Inter, not serif */
 .serif-italic {
-    font-family: 'Newsreader', serif;
-    font-style: italic;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-style: normal;
 }
+
 .label-caps {
     font-family: 'Inter', sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.15em;
     font-size: 0.7rem;
     font-weight: 600;
-}
-.custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: #131313;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #2a2a2a;
+    color: #414755;
 }
 
-/* ── Global scrollbar ── */
+.glass-panel {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.whisper-graph {
+    background: linear-gradient(180deg, rgba(0, 88, 188, 0.05) 0%, rgba(0, 88, 188, 0) 100%);
+}
+
+/* ── Scrollbar — light ── */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f4f3f8; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c6d7; }
+
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #131313; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; }
+::-webkit-scrollbar-track { background: #f4f3f8; }
+::-webkit-scrollbar-thumb { background: #c1c6d7; }
 
-/* ── Input resets (bottom-border-only style) ── */
+/* ── Input resets ── */
 @layer base {
   input, select, textarea {
     border-top: none !important;
@@ -127,7 +139,7 @@ body {
     box-shadow: none;
   }
   input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.5);
+    filter: none;
     cursor: pointer;
   }
   input[type="number"]::-webkit-inner-spin-button,

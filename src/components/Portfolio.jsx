@@ -86,12 +86,11 @@ async function fetchAllPrices() {
       const data = await res.json()
       usdToEur = data.rates?.EUR ?? null
       result.usd = usdToEur
-      result._usdToEur = usdToEur  // store for currency toggle conversions
+      result._usdToEur = usdToEur
     }
   } catch (e) { console.warn('[prices] Frankfurter USD failed:', e.message) }
 
   // 3. gold-api.com for gold/silver in USD → convert to EUR
-  // Free, no API key, CORS-open (Access-Control-Allow-Origin: *)
   try {
     const [goldRes, silverRes] = await Promise.all([
       fetch('https://api.gold-api.com/price/XAU', { signal: AbortSignal.timeout(8000) }),
@@ -100,7 +99,6 @@ async function fetchAllPrices() {
     if (goldRes.ok && silverRes.ok) {
       const goldData   = await goldRes.json()
       const silverData = await silverRes.json()
-      // Response: { name: "Gold", price: 1842.10, symbol: "XAU", updatedAt: "..." }
       const goldUsd   = goldData.price   ?? null
       const silverUsd = silverData.price ?? null
       console.log('[prices] gold-api.com — XAU:', goldUsd, 'USD, XAG:', silverUsd, 'USD')
@@ -108,7 +106,6 @@ async function fetchAllPrices() {
         result.gold   = goldUsd   !== null ? goldUsd   * usdToEur : null
         result.silver = silverUsd !== null ? silverUsd * usdToEur : null
       }
-      // Also store raw USD prices for the currency toggle
       result._goldUsd   = goldUsd
       result._silverUsd = silverUsd
     }
@@ -123,17 +120,16 @@ export default function Portfolio({ session, onNavigate }) {
   const userId  = session.user.id
   const initial = session.user.email.charAt(0).toUpperCase()
 
-  const [prices,       setPrices]       = useState({ bitcoin: null, ethereum: null, solana: null, gold: null, silver: null, usd: null, cash_eur: 1, cash_tr: 1 })
+  const [prices,        setPrices]        = useState({ bitcoin: null, ethereum: null, solana: null, gold: null, silver: null, usd: null, cash_eur: 1, cash_tr: 1 })
   const [pricesLoading, setPricesLoading] = useState(true)
-  const [holdings,     setHoldings]     = useState([])
-  const [filter,       setFilter]       = useState('all') // 'all' | 'commodities' | 'digital'
-  const [showForm,     setShowForm]     = useState(false)
-  const [formAsset,    setFormAsset]    = useState('bitcoin')
-  const [formQty,      setFormQty]      = useState('')
-  const [formPrice,    setFormPrice]    = useState('')
-  const [formStatus,   setFormStatus]   = useState(null) // null | 'loading' | 'success' | 'error'
-  // Per-row currency: { [assetId]: 'EUR' | 'USD' }
-  const [rowCurrency,  setRowCurrency]  = useState({})
+  const [holdings,      setHoldings]      = useState([])
+  const [filter,        setFilter]        = useState('all') // 'all' | 'commodities' | 'digital'
+  const [showForm,      setShowForm]      = useState(false)
+  const [formAsset,     setFormAsset]     = useState('bitcoin')
+  const [formQty,       setFormQty]       = useState('')
+  const [formPrice,     setFormPrice]     = useState('')
+  const [formStatus,    setFormStatus]    = useState(null) // null | 'loading' | 'success' | 'error'
+  const [rowCurrency,   setRowCurrency]   = useState({})
 
   // Load prices and holdings in parallel
   useEffect(() => {
@@ -148,14 +144,12 @@ export default function Portfolio({ session, onNavigate }) {
     else setHoldings(data || [])
   }
 
-  // Map holdings by asset_id for quick lookup
   const holdingMap = useMemo(() => {
     const map = {}
     for (const h of holdings) map[h.asset_id] = h
     return map
   }, [holdings])
 
-  // Total portfolio value
   const totalValue = useMemo(() => {
     return ASSETS.reduce((sum, asset) => {
       const h = holdingMap[asset.id]
@@ -165,7 +159,6 @@ export default function Portfolio({ session, onNavigate }) {
     }, 0)
   }, [holdingMap, prices])
 
-  // Total purchase cost (for overall P&L)
   const totalCost = useMemo(() => {
     return ASSETS.reduce((sum, asset) => {
       const h = holdingMap[asset.id]
@@ -177,7 +170,6 @@ export default function Portfolio({ session, onNavigate }) {
   const totalPnl    = totalValue - totalCost
   const totalPnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : null
 
-  // Filtered asset list
   const visibleAssets = useMemo(() => {
     if (filter === 'commodities') return ASSETS.filter(a => a.category === 'commodities')
     if (filter === 'digital')     return ASSETS.filter(a => a.category === 'digital')
@@ -185,7 +177,6 @@ export default function Portfolio({ session, onNavigate }) {
     return ASSETS
   }, [filter])
 
-  // Pre-fill form when opening for an existing holding
   function openForm(assetId) {
     const h = holdingMap[assetId]
     setFormAsset(assetId)
@@ -228,167 +219,194 @@ export default function Portfolio({ session, onNavigate }) {
     else setHoldings(prev => prev.filter(h => h.asset_id !== assetId))
   }
 
-  // Trailing 12 months for performance chart
   const chartMonths = getLast12Months()
-  // Static bar heights matching the HTML design (decorative)
   const barHeights = [30, 35, 32, 45, 55, 50, 65, 62, 75, 85, 82, 100]
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-surface">
 
-      {/* ── Sidebar (exact from HTML) ── */}
-      <aside className="fixed left-0 top-0 h-full flex flex-col py-8 bg-[#1c1b1b] w-64 z-50">
-        <div className="px-8 mb-12">
-          <h1 className="text-2xl font-serif italic text-[#f2ca50]">FinanceOS</h1>
-          <p className="font-sans uppercase tracking-[0.1em] text-[10px] text-gray-500 mt-1">Sovereign Curator</p>
+      {/* ── Sidebar ── */}
+      <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
+        <div className="mb-8 px-4 py-2">
+          <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
+          <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
         </div>
-        <nav className="flex-1 space-y-2">
-          <a
-            className="flex items-center gap-4 px-8 py-3 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer"
-            onClick={() => onNavigate('dashboard')}
-          >
+        <nav className="flex-1 space-y-1">
+          <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">dashboard</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Dashboard</span>
+            <span>Dashboard</span>
           </a>
-          <a
-            className="flex items-center gap-4 px-8 py-3 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer"
-            onClick={() => onNavigate('monthly')}
-          >
+          <a onClick={() => onNavigate('monthly')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">calendar_month</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Monthly Overview</span>
+            <span>Overview</span>
           </a>
-          <a className="flex items-center gap-4 px-8 py-3 text-[#f2ca50] border-l-2 border-[#f2ca50] font-bold bg-[#2a2a2a]/50">
+          <a className="flex items-center gap-3 px-4 py-3 text-blue-600 bg-white/50 rounded-xl shadow-sm font-sans text-sm font-medium tracking-tight cursor-pointer">
             <span className="material-symbols-outlined">account_balance_wallet</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Portfolio</span>
+            <span>Portfolio</span>
           </a>
-          <a className="flex items-center gap-4 px-8 py-3 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer" onClick={() => onNavigate('savings')}>
+          <a onClick={() => onNavigate('savings')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">savings</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Savings Goals</span>
+            <span>Savings</span>
           </a>
         </nav>
-        <div className="mt-auto px-8 space-y-4">
+        <div className="mt-auto pt-6 border-t border-slate-200/50">
           <button
-            className="w-full text-[#3c2f00] py-3 font-sans uppercase tracking-widest text-xs font-bold active:scale-95 transition-transform"
-            style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => { setFormAsset('bitcoin'); setFormQty(''); setFormPrice(''); setShowForm(s => !s) }}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity active:scale-95 duration-200"
           >
-            Sign Out
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+            Add Position
           </button>
-          <div className="pt-6 space-y-2 border-t border-outline-variant/15">
-            <div className="font-sans text-gray-600 text-[0.6rem] truncate">{session.user.email}</div>
-            <a className="flex items-center gap-4 py-2 text-gray-500 hover:text-gray-200 transition-colors cursor-pointer">
-              <span className="material-symbols-outlined">settings</span>
-              <span className="font-sans uppercase tracking-[0.1em] text-xs">Settings</span>
-            </a>
-            <a className="flex items-center gap-4 py-2 text-gray-500 hover:text-gray-200 transition-colors cursor-pointer">
-              <span className="material-symbols-outlined">help</span>
-              <span className="font-sans uppercase tracking-[0.1em] text-xs">Support</span>
-            </a>
+          <div className="mt-6 flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-sm shrink-0">
+              {initial}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-bold text-on-surface truncate">{session.user.email.split('@')[0]}</span>
+              <button onClick={() => supabase.auth.signOut()} className="text-[10px] text-on-surface-variant hover:text-tertiary transition-colors text-left">Sign out</button>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* ── Main Content Canvas (exact from HTML) ── */}
+      {/* ── Main ── */}
       <main className="ml-64 flex-1 flex flex-col min-h-screen">
 
-        {/* ── Top Header (exact from HTML) ── */}
-        <header className="flex justify-between items-center w-full px-12 py-6 bg-[#131313]/80 backdrop-blur-xl sticky top-0 z-40">
-          <div className="flex items-center gap-6">
-            <div className="relative group">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#99907c]">search</span>
-              <input
-                className="bg-[#2a2a2a] border-none text-on-surface text-sm pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-1 focus:ring-[#f2ca50] transition-all"
-                placeholder="Search Assets..."
-                type="text"
-              />
-            </div>
+        {/* ── Header ── */}
+        <header className="flex justify-between items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+          <div className="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full w-96">
+            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '18px' }}>search</span>
+            <input
+              className="bg-transparent border-none text-sm text-on-surface-variant focus:ring-0 w-full placeholder:text-on-surface-variant/50"
+              placeholder="Search assets, trends, or documents..."
+              type="text"
+            />
           </div>
-          <div className="flex items-center gap-8">
-            <div className="flex gap-4">
-              <button className="text-gray-400 hover:text-[#f2ca50] transition-colors">
-                <span className="material-symbols-outlined">notifications</span>
-              </button>
-              <button className="text-gray-400 hover:text-[#f2ca50] transition-colors">
-                <span className="material-symbols-outlined">settings</span>
-              </button>
-            </div>
-            <div className="flex items-center gap-3 pl-6 border-l border-outline-variant/20">
-              <span className="font-sans uppercase tracking-widest text-[10px] text-gray-400">{session.user.email.split('@')[0]}</span>
-              <div className="w-10 h-10 bg-[#2a2a2a] flex items-center justify-center border border-[#f2ca50]/20 text-[#f2ca50] font-bold text-sm">
-                {initial}
-              </div>
-            </div>
+          <div className="flex items-center gap-4">
+            <button className="relative text-on-surface-variant hover:opacity-70 transition-opacity">
+              <span className="material-symbols-outlined">notifications</span>
+            </button>
+            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
+              <span className="material-symbols-outlined">settings</span>
+            </button>
           </div>
         </header>
 
-        {/* ── Portfolio Content (exact from HTML) ── */}
-        <div className="px-12 py-12 max-w-7xl w-full mx-auto">
+        {/* ── Content ── */}
+        <div className="p-8 max-w-6xl mx-auto space-y-10 w-full">
 
-          {/* ── Header Section ── */}
-          <section className="mb-16">
-            <div className="flex flex-col gap-1">
-              <span className="font-sans uppercase tracking-[0.2em] text-xs text-[#f2ca50] mb-2">Aggregate Holdings</span>
-              <h2 className="text-6xl font-serif italic text-[#f2ca50] leading-tight">
-                {pricesLoading ? '—' : fmtEur(totalValue, 2)}
-              </h2>
-              <div className="flex items-center gap-4 mt-4">
-                {totalPnlPct !== null && (
-                  <span className={`flex items-center gap-1 font-medium text-sm ${totalPnl >= 0 ? 'text-[#b6d5cb]' : 'text-[#ffb4ab]'}`}>
-                    <span className="material-symbols-outlined text-sm">{totalPnl >= 0 ? 'trending_up' : 'trending_down'}</span>
-                    {fmtPct(totalPnlPct)} all time
-                  </span>
-                )}
-                <span className="text-gray-500 font-sans uppercase text-[10px] tracking-widest">
-                  {pricesLoading ? 'Fetching live prices...' : 'Live prices'}
-                </span>
+          {/* ── Portfolio Hero ── */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 bg-surface-container-lowest p-8 rounded-[2rem] shadow-sm border border-outline-variant/10">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <p className="text-on-surface-variant text-[10px] uppercase tracking-widest font-semibold mb-1">Aggregate Holdings</p>
+                  <h2 className="text-5xl font-extrabold tracking-tighter text-on-surface">
+                    {pricesLoading ? '—' : fmtEur(totalValue, 2)}
+                  </h2>
+                </div>
+                <div className="flex flex-col items-end">
+                  {totalPnlPct !== null && (
+                    <span className={`flex items-center font-bold text-sm px-3 py-1 rounded-full ${totalPnl >= 0 ? 'text-secondary bg-secondary-container/20' : 'text-tertiary bg-tertiary/5'}`}>
+                      <span className="material-symbols-outlined text-sm mr-1">{totalPnl >= 0 ? 'trending_up' : 'trending_down'}</span>
+                      {fmtPct(totalPnlPct)} all time
+                    </span>
+                  )}
+                  <p className="text-[10px] text-on-surface-variant mt-2 font-medium">
+                    {pricesLoading ? 'Fetching live prices...' : 'Live prices'}
+                  </p>
+                </div>
               </div>
+              <div className="h-24 w-full mt-4 relative overflow-hidden rounded-xl">
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent"></div>
+                <svg className="w-full h-full" viewBox="0 0 400 100" preserveAspectRatio="none">
+                  <path d="M0,80 Q50,70 100,50 T200,60 T300,20 T400,30" fill="none" stroke="#0058bc" strokeWidth="2" />
+                  <path d="M0,80 Q50,70 100,50 T200,60 T300,20 T400,30 L400,100 L0,100 Z" fill="#0058bc" opacity="0.05" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Allocation Breakdown */}
+            <div className="bg-surface-container-low p-8 rounded-[2rem] flex flex-col justify-between border border-outline-variant/10">
+              <div>
+                <p className="text-on-surface-variant text-[10px] uppercase tracking-widest font-semibold mb-4 text-center">Allocation</p>
+                <div className="relative w-24 h-24 mx-auto mb-4">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="30" fill="none" stroke="#eeedf3" strokeWidth="10" />
+                    <circle cx="40" cy="40" r="30" fill="none" stroke="#0058bc" strokeWidth="10"
+                      strokeDasharray="188.4" strokeDashoffset="47" strokeLinecap="round" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary/40" style={{ fontSize: '28px' }}>pie_chart</span>
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  {[
+                    { label: 'Commodities', color: 'bg-primary' },
+                    { label: 'Crypto', color: 'bg-secondary-fixed-dim' },
+                    { label: 'Cash', color: 'bg-tertiary-fixed-dim' },
+                  ].map(item => (
+                    <li key={item.label} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
+                        <span className="text-xs font-semibold">{item.label}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button
+                onClick={() => { setFormAsset('bitcoin'); setFormQty(''); setFormPrice(''); setShowForm(s => !s) }}
+                className="w-full py-2 text-primary text-[11px] font-bold tracking-widest uppercase hover:underline mt-4"
+              >
+                Add Position
+              </button>
             </div>
           </section>
 
           {/* ── Asset Table ── */}
-          <section className="mb-20">
-            <div className="mb-8 flex justify-between items-end">
-              <h3 className="font-serif italic text-3xl text-on-surface">Primary Assets</h3>
-              <div className="flex items-center gap-6">
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold tracking-tight">Primary Assets</h3>
+              <div className="flex items-center gap-3">
                 {/* Filter tabs */}
-                <div className="flex gap-4">
-                  {[['all','All Assets'],['commodities','Commodities'],['digital','Digital'],['cash','Cash']].map(([key, label]) => (
+                <div className="flex gap-2">
+                  {[['all','All'],['commodities','Metals'],['digital','Crypto'],['cash','Cash']].map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => setFilter(key)}
-                      className={`font-sans uppercase text-[10px] tracking-widest pb-1 transition-colors ${
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors ${
                         filter === key
-                          ? 'text-[#f2ca50] border-b border-[#f2ca50]/50'
-                          : 'text-gray-500 hover:text-on-surface'
+                          ? 'bg-primary text-on-primary'
+                          : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container'
                       }`}
                     >
                       {label}
                     </button>
                   ))}
                 </div>
-                {/* Add Position button */}
                 <button
                   onClick={() => { setFormAsset('bitcoin'); setFormQty(''); setFormPrice(''); setShowForm(s => !s) }}
-                  className="flex items-center gap-2 font-sans uppercase text-[10px] tracking-widest text-[#f2ca50] border border-[#f2ca50]/30 px-3 py-1.5 hover:bg-[#f2ca50]/10 transition-colors"
+                  className="px-4 py-2 bg-surface-container-high rounded-xl text-xs font-semibold text-on-surface-variant flex items-center gap-2 hover:bg-surface-container transition-colors"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
-                  Add Position
+                  <span className="material-symbols-outlined text-base">add</span>
+                  Add
                 </button>
               </div>
             </div>
 
             {/* Collapsible Add/Edit Form */}
             {showForm && (
-              <div className="bg-[#1c1b1b] p-8 mb-8 border-b border-[#4d4635]">
-                <h4 className="font-serif italic text-xl mb-6 text-[#f2ca50]">
+              <div className="bg-surface-container-lowest rounded-2xl p-8 mb-6 border border-outline-variant/10 shadow-sm">
+                <h4 className="text-lg font-bold mb-6 text-on-surface">
                   {holdingMap[formAsset] ? 'Update Position' : 'Add Position'}
                 </h4>
                 <form onSubmit={handleSaveHolding} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                  <div className="space-y-2">
-                    <label className="font-sans uppercase tracking-[0.15em] text-[0.7rem] font-semibold text-[#d0c5af]">Asset</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Asset</label>
                     <select
-                      className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-2 appearance-none focus:outline-none text-on-surface"
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20"
                       value={formAsset}
                       onChange={e => {
                         setFormAsset(e.target.value)
@@ -397,16 +415,16 @@ export default function Portfolio({ session, onNavigate }) {
                         setFormPrice(h ? String(h.purchase_price) : '')
                       }}
                     >
-                      {ASSETS.map(a => <option key={a.id} value={a.id} className="bg-[#2a2a2a]">{a.label} ({a.ticker})</option>)}
+                      {ASSETS.map(a => <option key={a.id} value={a.id}>{a.label} ({a.ticker})</option>)}
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="font-sans uppercase tracking-[0.15em] text-[0.7rem] font-semibold text-[#d0c5af]">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">
                       {['cash_eur', 'cash_tr'].includes(formAsset) ? 'Amount (€)' : 'Quantity'}
                     </label>
                     <input
                       type="number" min="0" step="any"
-                      className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-2 focus:outline-none text-on-surface"
+                      className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
                       placeholder="0.00"
                       value={formQty}
                       onChange={e => setFormQty(e.target.value)}
@@ -414,13 +432,13 @@ export default function Portfolio({ session, onNavigate }) {
                     />
                   </div>
                   {!['cash_eur', 'cash_tr'].includes(formAsset) && (
-                    <div className="space-y-2">
-                      <label className="font-sans uppercase tracking-[0.15em] text-[0.7rem] font-semibold text-[#d0c5af]">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">
                         Avg Purchase Price (€)
                       </label>
                       <input
                         type="number" min="0" step="any"
-                        className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-2 focus:outline-none text-on-surface"
+                        className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
                         placeholder="0.00"
                         value={formPrice}
                         onChange={e => setFormPrice(e.target.value)}
@@ -432,15 +450,14 @@ export default function Portfolio({ session, onNavigate }) {
                     <button
                       type="submit"
                       disabled={formStatus === 'loading'}
-                      className="flex-1 py-2.5 font-sans uppercase tracking-widest text-[10px] font-bold text-[#3c2f00] disabled:opacity-50 transition-opacity"
-                      style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}
+                      className="flex-1 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
                     >
                       {formStatus === 'loading' ? '...' : formStatus === 'success' ? '✓ Saved' : formStatus === 'error' ? 'Error' : 'Save'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowForm(false)}
-                      className="px-3 py-2.5 font-sans uppercase tracking-widest text-[10px] text-gray-500 border border-[#4d4635] hover:text-on-surface transition-colors"
+                      className="px-4 py-3 text-on-surface-variant border border-outline-variant/30 rounded-xl hover:bg-surface-container transition-colors text-sm font-semibold"
                     >
                       Cancel
                     </button>
@@ -449,221 +466,261 @@ export default function Portfolio({ session, onNavigate }) {
               </div>
             )}
 
-            {/* Asset Table (exact structure from HTML) */}
-            <div className="overflow-hidden">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-[#4d4635]/15">
-                    <th className="pb-4 font-sans uppercase text-[10px] tracking-[0.2em] text-gray-500 font-normal">Asset</th>
-                    <th className="pb-4 font-sans uppercase text-[10px] tracking-[0.2em] text-gray-500 font-normal text-right">Unit Price</th>
-                    <th className="pb-4 font-sans uppercase text-[10px] tracking-[0.2em] text-gray-500 font-normal text-right">Quantity</th>
-                    <th className="pb-4 font-sans uppercase text-[10px] tracking-[0.2em] text-gray-500 font-normal text-right">Total Value</th>
-                    <th className="pb-4 font-sans uppercase text-[10px] tracking-[0.2em] text-gray-500 font-normal text-right">P &amp; L</th>
-                    <th className="pb-4 w-16"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#4d4635]/5">
-                  {visibleAssets.map(asset => {
-                    const holding      = holdingMap[asset.id]
-                    const eurPrice     = prices[asset.id]           // always EUR
-                    const usdToEur     = prices._usdToEur ?? null
-                    const cur          = rowCurrency[asset.id] ?? 'EUR'
-                    const isUsd        = cur === 'USD'
+            {/* Asset Table */}
+            <div className="bg-surface-container-lowest rounded-[2rem] overflow-hidden border border-outline-variant/10 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-surface-container-low/50">
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Asset</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">Unit Price</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">Quantity</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">Total Value</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">P &amp; L</th>
+                      <th className="px-8 py-5 w-20"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-container/30">
+                    {visibleAssets.map(asset => {
+                      const holding      = holdingMap[asset.id]
+                      const eurPrice     = prices[asset.id]
+                      const usdToEur     = prices._usdToEur ?? null
+                      const cur          = rowCurrency[asset.id] ?? 'EUR'
+                      const isUsd        = cur === 'USD'
 
-                    // Convert EUR price → USD for display if toggled
-                    const displayPrice = eurPrice !== null && eurPrice !== undefined
-                      ? (isUsd && usdToEur ? eurPrice / usdToEur : eurPrice)
-                      : null
+                      const displayPrice = eurPrice !== null && eurPrice !== undefined
+                        ? (isUsd && usdToEur ? eurPrice / usdToEur : eurPrice)
+                        : null
 
-                    const currentValueEur = holding && eurPrice ? holding.quantity * eurPrice : null
-                    const displayValue    = currentValueEur !== null
-                      ? (isUsd && usdToEur ? currentValueEur / usdToEur : currentValueEur)
-                      : null
+                      const currentValueEur = holding && eurPrice ? holding.quantity * eurPrice : null
+                      const displayValue    = currentValueEur !== null
+                        ? (isUsd && usdToEur ? currentValueEur / usdToEur : currentValueEur)
+                        : null
 
-                    const purchaseValEur = holding ? holding.quantity * holding.purchase_price : null
-                    const pnlEur         = currentValueEur !== null && purchaseValEur !== null
-                      ? currentValueEur - purchaseValEur : null
-                    const displayPnl     = pnlEur !== null
-                      ? (isUsd && usdToEur ? pnlEur / usdToEur : pnlEur)
-                      : null
-                    const pnlPct         = purchaseValEur ? (pnlEur / purchaseValEur) * 100 : null
-                    const isPositive     = pnlEur !== null && pnlEur >= 0
+                      const purchaseValEur = holding ? holding.quantity * holding.purchase_price : null
+                      const pnlEur         = currentValueEur !== null && purchaseValEur !== null
+                        ? currentValueEur - purchaseValEur : null
+                      const displayPnl     = pnlEur !== null
+                        ? (isUsd && usdToEur ? pnlEur / usdToEur : pnlEur)
+                        : null
+                      const pnlPct         = purchaseValEur ? (pnlEur / purchaseValEur) * 100 : null
+                      const isPositive     = pnlEur !== null && pnlEur >= 0
 
-                    const priceDecimals  = displayPrice !== null && displayPrice < 1 ? 4 : 2
+                      const priceDecimals  = displayPrice !== null && displayPrice < 1 ? 4 : 2
 
-                    return (
-                      <tr key={asset.id} className="group hover:bg-[#1c1b1b] transition-colors">
-                        {/* Asset name + icon */}
-                        <td className="py-6 flex items-center gap-4">
-                          {asset.iconStyle === 'gold' ? (
-                            <div className="w-10 h-10 flex items-center justify-center" style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}>
-                              <span className="material-symbols-outlined text-[#3c2f00]">{asset.icon}</span>
-                            </div>
-                          ) : asset.iconStyle === 'silver' ? (
-                            <div className="w-10 h-10 bg-[#4b4735] flex items-center justify-center">
-                              <span className="material-symbols-outlined text-[#bcb59e]">{asset.icon}</span>
-                            </div>
-                          ) : asset.iconStyle === 'cash' ? (
-                            <div className="w-10 h-10 bg-[#1a352f] flex items-center justify-center border border-[#b6d5cb]/20">
-                              <span className="material-symbols-outlined text-[#b6d5cb]">{asset.icon}</span>
-                            </div>
-                          ) : (
-                            <div className="w-10 h-10 bg-[#2a2a2a] flex items-center justify-center border border-[#f2ca50]/20">
-                              <span className="material-symbols-outlined text-[#f2ca50]">{asset.icon}</span>
-                            </div>
-                          )}
-                          <div>
-                            <div className="font-serif italic text-xl">{asset.label}</div>
-                            <div className="font-sans text-[10px] uppercase text-gray-500 tracking-widest">{asset.ticker}</div>
-                          </div>
-                        </td>
+                      // Icon styles by asset type
+                      const iconClass = asset.iconStyle === 'gold'
+                        ? 'bg-orange-100 text-orange-600'
+                        : asset.iconStyle === 'silver'
+                        ? 'bg-surface-container-high text-on-surface-variant'
+                        : asset.iconStyle === 'cash'
+                        ? 'bg-secondary-container/20 text-on-secondary-container'
+                        : 'bg-primary-fixed/30 text-primary' // crypto
 
-                        {/* Unit price */}
-                        <td className="py-6 text-right font-sans text-sm">
-                          {pricesLoading ? (
-                            <span className="text-gray-600">—</span>
-                          ) : displayPrice !== null ? (
-                            fmtMoney(displayPrice, cur, priceDecimals)
-                          ) : (
-                            <span className="text-gray-600">N/A</span>
-                          )}
-                        </td>
-
-                        {/* Quantity */}
-                        <td className="py-6 text-right font-sans text-sm">
-                          {holding ? fmtQty(holding.quantity, asset.id) : <span className="text-gray-600">—</span>}
-                        </td>
-
-                        {/* Total value */}
-                        <td className="py-6 text-right font-sans text-sm font-bold">
-                          {displayValue !== null ? fmtMoney(displayValue, cur) : <span className="text-gray-600">—</span>}
-                        </td>
-
-                        {/* P&L */}
-                        <td className="py-6 text-right">
-                          {displayPnl !== null ? (
-                            <div>
-                              <div className={`text-sm ${isPositive ? 'text-[#b6d5cb]' : 'text-[#ffb4ab]'}`}>
-                                {isPositive ? '+' : ''}{fmtMoney(Math.abs(displayPnl), cur)}
+                      return (
+                        <tr key={asset.id} className="group hover:bg-surface-container-low/20 transition-colors">
+                          {/* Asset name + icon */}
+                          <td className="px-8 py-6">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconClass}`}>
+                                <span className="material-symbols-outlined">{asset.icon}</span>
                               </div>
-                              <div className={`text-[10px] font-sans tracking-widest ${isPositive ? 'text-[#b6d5cb]' : 'text-[#ffb4ab]'}`}>
-                                {fmtPct(pnlPct)}
+                              <div>
+                                <p className="font-bold text-sm">{asset.label}</p>
+                                <p className="text-[10px] text-on-surface-variant font-medium">{asset.ticker}</p>
                               </div>
                             </div>
-                          ) : (
-                            <span className="text-gray-600 text-sm">—</span>
-                          )}
-                        </td>
+                          </td>
 
-                        {/* Currency toggle + actions */}
-                        <td className="py-6 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {/* EUR/USD toggle — always visible, subtle */}
-                            {usdToEur && (
-                              <button
-                                onClick={() => setRowCurrency(prev => ({
-                                  ...prev,
-                                  [asset.id]: prev[asset.id] === 'USD' ? 'EUR' : 'USD',
-                                }))}
-                                className="flex items-center font-sans text-[8px] tracking-widest border transition-colors"
-                                style={{
-                                  borderColor: isUsd ? '#f2ca50' : '#4d4635',
-                                  color:       isUsd ? '#f2ca50' : '#4d4635',
-                                  padding:     '2px 5px',
-                                }}
-                                title="Toggle currency"
-                              >
-                                <span style={{ opacity: isUsd ? 0.4 : 1 }}>EUR</span>
-                                <span style={{ margin: '0 3px', opacity: 0.3 }}>|</span>
-                                <span style={{ opacity: isUsd ? 1 : 0.4 }}>USD</span>
-                              </button>
+                          {/* Unit price */}
+                          <td className="px-8 py-6 text-right">
+                            <p className="font-bold text-sm">
+                              {pricesLoading ? (
+                                <span className="text-on-surface-variant/40">—</span>
+                              ) : displayPrice !== null ? (
+                                fmtMoney(displayPrice, cur, priceDecimals)
+                              ) : (
+                                <span className="text-on-surface-variant/40">N/A</span>
+                              )}
+                            </p>
+                          </td>
+
+                          {/* Quantity */}
+                          <td className="px-8 py-6 text-right">
+                            <p className="font-bold text-sm">
+                              {holding ? fmtQty(holding.quantity, asset.id) : <span className="text-on-surface-variant/40">—</span>}
+                            </p>
+                          </td>
+
+                          {/* Total value */}
+                          <td className="px-8 py-6 text-right">
+                            <p className="font-bold text-sm">
+                              {displayValue !== null ? fmtMoney(displayValue, cur) : <span className="text-on-surface-variant/40">—</span>}
+                            </p>
+                          </td>
+
+                          {/* P&L */}
+                          <td className="px-8 py-6 text-right">
+                            {displayPnl !== null ? (
+                              <div>
+                                <div className={`text-sm font-bold ${isPositive ? 'text-secondary' : 'text-tertiary'}`}>
+                                  {isPositive ? '+' : ''}{fmtMoney(Math.abs(displayPnl), cur)}
+                                </div>
+                                <div className={`text-[10px] font-semibold ${isPositive ? 'text-secondary' : 'text-tertiary'} ${isPositive ? 'bg-secondary-container/10' : 'bg-tertiary-container/10'} px-2 py-0.5 rounded-lg inline-block mt-0.5`}>
+                                  {fmtPct(pnlPct)}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-on-surface-variant/40 text-sm">—</span>
                             )}
-                            {/* Edit + delete — appear on row hover */}
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => openForm(asset.id)}
-                                className="p-1 text-gray-500 hover:text-[#f2ca50] transition-colors"
-                                title="Edit position"
-                              >
-                                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
-                              </button>
-                              {holding && (
+                          </td>
+
+                          {/* Currency toggle + actions */}
+                          <td className="px-8 py-6 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {usdToEur && (
                                 <button
-                                  onClick={() => handleDeleteHolding(asset.id)}
-                                  className="p-1 text-gray-500 hover:text-[#ffb4ab] transition-colors"
-                                  title="Remove position"
+                                  onClick={() => setRowCurrency(prev => ({
+                                    ...prev,
+                                    [asset.id]: prev[asset.id] === 'USD' ? 'EUR' : 'USD',
+                                  }))}
+                                  className={`text-[9px] font-bold tracking-widest border rounded-lg px-2 py-0.5 transition-colors ${
+                                    isUsd
+                                      ? 'border-primary text-primary bg-primary/5'
+                                      : 'border-outline-variant/30 text-on-surface-variant hover:border-primary/30'
+                                  }`}
+                                  title="Toggle currency"
                                 >
-                                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                                  {isUsd ? 'USD' : 'EUR'}
                                 </button>
                               )}
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => openForm(asset.id)}
+                                  className="p-1 text-on-surface-variant hover:text-primary transition-colors rounded-lg"
+                                  title="Edit position"
+                                >
+                                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                                </button>
+                                {holding && (
+                                  <button
+                                    onClick={() => handleDeleteHolding(asset.id)}
+                                    className="p-1 text-on-surface-variant hover:text-tertiary transition-colors rounded-lg"
+                                    title="Remove position"
+                                  >
+                                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="bg-surface-container-low/30 px-8 py-4 flex justify-between items-center">
+                <p className="text-[10px] text-on-surface-variant font-semibold">Showing {visibleAssets.length} of {ASSETS.length} assets</p>
+                <button className="text-xs font-bold text-primary hover:underline">View Full Report</button>
+              </div>
             </div>
           </section>
 
-          {/* ── Performance History (exact from HTML) ── */}
-          <section className="bg-[#1c1b1b] p-12 relative overflow-hidden">
-            <div className="flex justify-between items-start mb-12">
+          {/* ── Performance History ── */}
+          <section className="bg-surface-container-lowest rounded-[2rem] p-10 border border-outline-variant/10 shadow-sm">
+            <div className="flex justify-between items-start mb-10">
               <div>
-                <h3 className="font-serif italic text-3xl mb-2">Performance History</h3>
-                <p className="font-sans uppercase text-[10px] tracking-widest text-gray-500">Trailing 12 Months Growth</p>
+                <h3 className="text-2xl font-bold mb-1">Performance History</h3>
+                <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-widest">Trailing 12 Months Growth</p>
               </div>
               <div className="flex gap-2">
-                <button className="w-8 h-8 flex items-center justify-center bg-[#f2ca50] text-[#3c2f00] text-[10px] font-bold">1Y</button>
-                <button className="w-8 h-8 flex items-center justify-center border border-[#4d4635]/30 text-gray-500 text-[10px] font-bold hover:border-[#f2ca50] hover:text-[#f2ca50] transition-colors">3Y</button>
-                <button className="w-8 h-8 flex items-center justify-center border border-[#4d4635]/30 text-gray-500 text-[10px] font-bold hover:border-[#f2ca50] hover:text-[#f2ca50] transition-colors">ALL</button>
+                <button className="w-10 h-8 flex items-center justify-center bg-primary text-on-primary text-[10px] font-bold rounded-xl">1Y</button>
+                <button className="w-10 h-8 flex items-center justify-center border border-outline-variant/30 text-on-surface-variant text-[10px] font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-colors">3Y</button>
+                <button className="w-10 h-8 flex items-center justify-center border border-outline-variant/30 text-on-surface-variant text-[10px] font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-colors">ALL</button>
               </div>
             </div>
 
-            {/* Abstract bar chart (exact from HTML — decorative) */}
-            <div className="h-64 flex items-end gap-1 w-full">
+            {/* Decorative bar chart */}
+            <div className="h-48 flex items-end gap-1 w-full">
               {barHeights.map((h, i) => (
                 <div
                   key={i}
-                  className="flex-1 hover:bg-[#f2ca50]/20 transition-all duration-500"
+                  className="flex-1 hover:opacity-80 transition-all duration-500 rounded-t-sm"
                   style={{
                     height: `${h}%`,
-                    backgroundColor: `rgba(242, 202, 80, ${0.05 + (i / 11) * 0.55})`,
+                    backgroundColor: `rgba(0, 88, 188, ${0.08 + (i / 11) * 0.52})`,
                   }}
                 />
               ))}
             </div>
 
-            {/* Month labels (dynamic) */}
-            <div className="flex justify-between mt-6 border-t border-[#4d4635]/10 pt-4">
+            {/* Month labels */}
+            <div className="flex justify-between mt-4 border-t border-outline-variant/10 pt-4">
               {[0, 3, 6, 9, 11].map(i => (
                 <span
                   key={i}
-                  className={`font-sans text-[10px] uppercase tracking-widest ${i === 11 ? 'text-[#f2ca50] font-bold' : 'text-gray-600'}`}
+                  className={`text-[10px] uppercase tracking-widest font-semibold ${i === 11 ? 'text-primary font-bold' : 'text-on-surface-variant/50'}`}
                 >
                   {chartMonths[i]}
                 </span>
               ))}
             </div>
 
-            {/* Decorative background icon (exact from HTML) */}
-            <div className="absolute -right-20 -bottom-20 opacity-5 pointer-events-none">
+            {/* Decorative bg icon */}
+            <div className="hidden">
               <span className="material-symbols-outlined" style={{ fontSize: '300px' }}>query_stats</span>
             </div>
           </section>
+
+          {/* ── Bento Bottom ── */}
+          <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="md:col-span-2 bg-inverse-surface text-inverse-on-surface p-8 rounded-[2rem] flex items-center justify-between">
+              <div>
+                <h4 className="text-xl font-bold mb-2">Portfolio Wellness</h4>
+                <p className="text-xs opacity-70 mb-4">Your current diversification is tracked across all asset classes.</p>
+                <div className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-secondary text-sm">verified</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Live Prices Active</span>
+                </div>
+              </div>
+              <div className="w-16 h-16 rounded-full border-4 border-secondary flex items-center justify-center font-bold text-xl shrink-0">
+                {totalValue > 0 ? Math.round(Math.min(100, (holdings.length / ASSETS.length) * 100)) : 0}
+              </div>
+            </div>
+            <div className="bg-primary-container text-on-primary-container p-8 rounded-[2rem] flex flex-col justify-between">
+              <span className="material-symbols-outlined">auto_awesome</span>
+              <div>
+                <p className="text-[10px] uppercase font-bold tracking-widest opacity-80">Holdings</p>
+                <p className="text-lg font-bold">{holdings.length} / {ASSETS.length} Assets</p>
+                <div className="w-full bg-white/20 h-1 rounded-full mt-3">
+                  <div className="bg-white h-full rounded-full" style={{ width: `${(holdings.length / ASSETS.length) * 100}%` }}></div>
+                </div>
+              </div>
+            </div>
+            <div
+              onClick={() => { setFormAsset('bitcoin'); setFormQty(''); setFormPrice(''); setShowForm(s => !s) }}
+              className="bg-surface-container-high p-8 rounded-[2rem] flex flex-col justify-between group cursor-pointer hover:bg-surface-container transition-colors"
+            >
+              <span className="material-symbols-outlined text-on-surface-variant">insights</span>
+              <div>
+                <p className="text-sm font-bold">Add Position</p>
+                <p className="text-[10px] text-on-surface-variant">Record a new holding or update an existing one.</p>
+              </div>
+            </div>
+          </section>
+
         </div>
 
-        {/* ── Footer (exact from HTML) ── */}
-        <footer className="flex flex-col items-center gap-4 w-full py-12 px-8 mt-auto border-t border-[#e5e2e1]/15 bg-[#131313]">
-          <div className="font-serif italic text-sm text-[#f2ca50]">FinanceOS</div>
+        {/* ── Footer ── */}
+        <footer className="mt-10 py-8 px-8 flex flex-col items-center gap-3 border-t border-outline-variant/20 bg-surface">
           <div className="flex gap-8">
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Terms</a>
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Privacy</a>
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Compliance</a>
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Contact</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Terms</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Privacy</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Compliance</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Contact</a>
           </div>
-          <p className="font-sans text-[10px] uppercase tracking-widest text-gray-600 mt-4">© FinanceOS. All rights reserved.</p>
+          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">© FinanceOS. All rights reserved.</p>
         </footer>
 
       </main>

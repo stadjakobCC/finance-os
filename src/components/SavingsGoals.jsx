@@ -106,50 +106,48 @@ export default function SavingsGoals({ session, onNavigate }) {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-surface">
 
       {/* ── Sidebar ── */}
-      <aside className="fixed left-0 top-0 h-full flex flex-col py-8 bg-[#1c1b1b] w-64 z-50">
-        <div className="px-8 mb-12">
-          <h1 className="text-2xl font-serif italic text-[#f2ca50]">FinanceOS</h1>
-          <p className="font-sans uppercase tracking-[0.1em] text-[10px] text-gray-500 mt-1">Sovereign Curator</p>
+      <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
+        <div className="mb-8 px-4 py-2">
+          <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
+          <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
         </div>
-        <nav className="flex-1 space-y-2">
-          <a className="flex items-center gap-4 px-8 py-3 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer" onClick={() => onNavigate('dashboard')}>
+        <nav className="flex-1 space-y-1">
+          <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">dashboard</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Dashboard</span>
+            <span>Dashboard</span>
           </a>
-          <a className="flex items-center gap-4 px-8 py-3 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer" onClick={() => onNavigate('monthly')}>
+          <a onClick={() => onNavigate('monthly')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">calendar_month</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Monthly Overview</span>
+            <span>Overview</span>
           </a>
-          <a className="flex items-center gap-4 px-8 py-3 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer" onClick={() => onNavigate('portfolio')}>
+          <a onClick={() => onNavigate('portfolio')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">account_balance_wallet</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Portfolio</span>
+            <span>Portfolio</span>
           </a>
-          <a className="flex items-center gap-4 px-8 py-3 text-[#f2ca50] border-l-2 border-[#f2ca50] font-bold bg-[#2a2a2a]/50">
+          <a className="flex items-center gap-3 px-4 py-3 text-blue-600 bg-white/50 rounded-xl shadow-sm font-sans text-sm font-medium tracking-tight cursor-pointer">
             <span className="material-symbols-outlined">savings</span>
-            <span className="font-sans uppercase tracking-[0.1em] text-xs">Savings Goals</span>
+            <span>Savings</span>
           </a>
         </nav>
-        <div className="mt-auto px-8 space-y-4">
+        <div className="mt-auto pt-6 border-t border-slate-200/50">
           <button
-            className="w-full text-[#3c2f00] py-3 font-sans uppercase tracking-widest text-xs font-bold active:scale-95 transition-transform"
-            style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => setShowForm(s => !s)}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity active:scale-95 duration-200"
           >
-            Sign Out
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+            New Aspiration
           </button>
-          <div className="pt-6 space-y-2 border-t border-[#4d4635]/15">
-            <div className="font-sans text-gray-600 text-[0.6rem] truncate">{session.user.email}</div>
-            <a className="flex items-center gap-4 py-2 text-gray-500 hover:text-gray-200 transition-colors cursor-pointer">
-              <span className="material-symbols-outlined">settings</span>
-              <span className="font-sans uppercase tracking-[0.1em] text-xs">Settings</span>
-            </a>
-            <a className="flex items-center gap-4 py-2 text-gray-500 hover:text-gray-200 transition-colors cursor-pointer">
-              <span className="material-symbols-outlined">help</span>
-              <span className="font-sans uppercase tracking-[0.1em] text-xs">Support</span>
-            </a>
+          <div className="mt-6 flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-sm shrink-0">
+              {initial}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-bold text-on-surface truncate">{session.user.email.split('@')[0]}</span>
+              <button onClick={() => supabase.auth.signOut()} className="text-[10px] text-on-surface-variant hover:text-tertiary transition-colors text-left">Sign out</button>
+            </div>
           </div>
         </div>
       </aside>
@@ -158,86 +156,75 @@ export default function SavingsGoals({ session, onNavigate }) {
       <main className="ml-64 flex-1 flex flex-col min-h-screen">
 
         {/* ── Header ── */}
-        <header className="flex justify-between items-center w-full px-12 py-6 bg-[#131313]/80 backdrop-blur-xl sticky top-0 z-40">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#99907c]">search</span>
-              <input
-                className="bg-[#2a2a2a] border-none text-on-surface text-sm pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-1 focus:ring-[#f2ca50] transition-all"
-                placeholder="Search Goals..."
-                type="text"
-              />
-            </div>
+        <header className="flex justify-between items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+          <div className="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full w-96">
+            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '18px' }}>search</span>
+            <input
+              className="bg-transparent border-none text-sm text-on-surface-variant focus:ring-0 w-full placeholder:text-on-surface-variant/50"
+              placeholder="Search goals..."
+              type="text"
+            />
           </div>
-          <div className="flex items-center gap-8">
-            <div className="flex gap-4">
-              <button className="text-gray-400 hover:text-[#f2ca50] transition-colors">
-                <span className="material-symbols-outlined">notifications</span>
-              </button>
-              <button className="text-gray-400 hover:text-[#f2ca50] transition-colors">
-                <span className="material-symbols-outlined">settings</span>
-              </button>
-            </div>
-            <div className="flex items-center gap-3 pl-6 border-l border-[#4d4635]/20">
-              <span className="font-sans uppercase tracking-widest text-[10px] text-gray-400">{session.user.email.split('@')[0]}</span>
-              <div className="w-10 h-10 bg-[#2a2a2a] flex items-center justify-center border border-[#f2ca50]/20 text-[#f2ca50] font-bold text-sm">
-                {initial}
-              </div>
-            </div>
+          <div className="flex items-center gap-4">
+            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
+              <span className="material-symbols-outlined">notifications</span>
+            </button>
+            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
+              <span className="material-symbols-outlined">settings</span>
+            </button>
           </div>
         </header>
 
         {/* ── Content ── */}
-        <div className="px-12 py-12 max-w-7xl w-full mx-auto">
+        <div className="p-10 max-w-7xl mx-auto w-full">
 
           {/* ── Page Header ── */}
-          <div className="flex justify-between items-end mb-16">
+          <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-6xl font-serif italic text-on-surface mb-2 tracking-tight">Future Aspirations</h2>
-              <p className="font-sans uppercase tracking-[0.2em] text-xs text-[#99907c]">Strategic Capital Preservation &amp; Growth</p>
+              <h2 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Future Aspirations</h2>
+              <p className="text-on-surface-variant">Curating your financial milestones with intentionality.</p>
             </div>
             <button
               onClick={() => setShowForm(s => !s)}
-              className="flex items-center gap-2 px-8 py-4 font-sans uppercase tracking-[0.15em] text-xs font-bold text-[#3c2f00] hover:brightness-110 transition-all active:scale-95"
-              style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}
+              className="bg-primary-container text-on-primary-container px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all hover:shadow-xl hover:shadow-primary/20 active:scale-95 text-sm"
             >
-              <span className="material-symbols-outlined text-sm">add</span>
-              Initiate New Goal
+              <span className="material-symbols-outlined">auto_awesome</span>
+              Add New Aspiration
             </button>
           </div>
 
           {/* ── New Goal Form ── */}
           {showForm && (
-            <div className="bg-[#1c1b1b] p-8 mb-8 border-b border-[#4d4635]">
-              <h4 className="font-serif italic text-xl mb-6 text-[#f2ca50]">New Savings Goal</h4>
+            <div className="bg-surface-container-lowest rounded-[2rem] p-8 mb-8 border border-outline-variant/10 shadow-sm">
+              <h4 className="text-lg font-bold mb-6 text-on-surface">New Savings Goal</h4>
               <form onSubmit={handleCreateGoal} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                <div className="space-y-2">
-                  <label className="font-sans uppercase tracking-[0.15em] text-[0.7rem] font-semibold text-[#d0c5af]">Goal Name</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Goal Name</label>
                   <input
                     type="text"
-                    className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-2 focus:outline-none text-on-surface"
+                    className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
                     placeholder="e.g. Emergency Fund"
                     value={formName}
                     onChange={e => setFormName(e.target.value)}
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="font-sans uppercase tracking-[0.15em] text-[0.7rem] font-semibold text-[#d0c5af]">Target Amount (€)</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Target Amount (€)</label>
                   <input
                     type="number" min="0" step="any"
-                    className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-2 focus:outline-none text-on-surface"
+                    className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
                     placeholder="0.00"
                     value={formTarget}
                     onChange={e => setFormTarget(e.target.value)}
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="font-sans uppercase tracking-[0.15em] text-[0.7rem] font-semibold text-[#d0c5af]">Already Saved (€)</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Already Saved (€)</label>
                   <input
                     type="number" min="0" step="any"
-                    className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-2 focus:outline-none text-on-surface"
+                    className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
                     placeholder="0.00"
                     value={formCurrent}
                     onChange={e => setFormCurrent(e.target.value)}
@@ -247,15 +234,14 @@ export default function SavingsGoals({ session, onNavigate }) {
                   <button
                     type="submit"
                     disabled={formStatus === 'loading'}
-                    className="flex-1 py-2.5 font-sans uppercase tracking-widest text-[10px] font-bold text-[#3c2f00] disabled:opacity-50"
-                    style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}
+                    className="flex-1 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
                   >
                     {formStatus === 'loading' ? '...' : formStatus === 'success' ? '✓ Created' : formStatus === 'error' ? 'Error' : 'Create'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="px-3 py-2.5 font-sans uppercase tracking-widest text-[10px] text-gray-500 border border-[#4d4635] hover:text-on-surface transition-colors"
+                    className="px-4 py-3 text-on-surface-variant border border-outline-variant/30 rounded-xl hover:bg-surface-container transition-colors text-sm font-semibold"
                   >
                     Cancel
                   </button>
@@ -266,36 +252,43 @@ export default function SavingsGoals({ session, onNavigate }) {
 
           {/* ── Bento Grid ── */}
           {loading ? (
-            <p className="font-sans uppercase tracking-widest text-[10px] text-gray-500">Loading...</p>
+            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">Loading...</p>
           ) : (
             <div className="grid grid-cols-12 gap-8 mb-16">
 
-              {/* ── Main Goal Card ── */}
-              <div className="col-span-12 bg-[#1c1b1b] p-10 flex flex-col justify-between min-h-[400px] group">
+              {/* ── Main Goal Card (Featured) ── */}
+              <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-[2rem] p-8 relative overflow-hidden flex flex-col group border border-outline-variant/10 shadow-sm min-h-[360px]">
                 {mainGoal ? (
                   <>
-                    <div className="flex justify-between items-start mb-12">
+                    {/* Decorative icon */}
+                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+                      <span className="material-symbols-outlined" style={{ fontSize: '120px' }}>savings</span>
+                    </div>
+
+                    <div className="flex items-start justify-between mb-12">
                       <div>
-                        <span className="font-sans uppercase tracking-[0.1em] text-[10px] text-[#f2ca50] mb-2 block">Priority I</span>
-                        <h3 className="text-4xl font-serif italic text-on-surface">{mainGoal.name}</h3>
+                        <span className="bg-secondary-container/20 text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-4 inline-block">
+                          {pctOf(mainGoal) >= 100 ? 'COMPLETE' : pctOf(mainGoal) >= 75 ? 'FINAL PHASE' : 'ON TRACK'}
+                        </span>
+                        <h3 className="text-3xl font-bold text-on-surface">{mainGoal.name}</h3>
+                        <p className="text-on-surface-variant">Priority Goal</p>
                       </div>
                       <div className="flex flex-col items-end gap-3">
                         <div className="text-right">
-                          <span className="text-3xl font-light text-on-surface">{fmtEur(mainGoal.current_amount)}</span>
-                          <p className="text-xs text-[#99907c] uppercase tracking-widest mt-1">of {fmtEur(mainGoal.target_amount)} target</p>
+                          <p className="text-sm font-medium text-on-surface-variant uppercase tracking-widest mb-1">Target</p>
+                          <p className="text-xl font-bold text-on-surface">{fmtEur(mainGoal.target_amount)}</p>
                         </div>
-                        {/* Action buttons — visible on hover */}
                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => { setAddMoneyId(addMoneyId === mainGoal.id ? null : mainGoal.id); setAddAmount('') }}
-                            className="flex items-center gap-1 px-3 py-1.5 font-sans uppercase tracking-widest text-[9px] border border-[#f2ca50]/30 text-[#f2ca50] hover:bg-[#f2ca50]/10 transition-colors"
+                            className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-primary/20 text-primary hover:bg-primary/5 rounded-lg transition-colors"
                           >
                             <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>add</span>
                             Add
                           </button>
                           <button
                             onClick={() => handleDelete(mainGoal.id)}
-                            className="p-1.5 text-gray-600 hover:text-[#ffb4ab] border border-[#4d4635]/30 hover:border-[#ffb4ab]/30 transition-colors"
+                            className="p-1.5 text-on-surface-variant hover:text-tertiary border border-outline-variant/30 hover:border-tertiary/30 rounded-lg transition-colors"
                             title="Delete goal"
                           >
                             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
@@ -307,11 +300,11 @@ export default function SavingsGoals({ session, onNavigate }) {
                     {/* Add money inline form */}
                     {addMoneyId === mainGoal.id && (
                       <form onSubmit={e => handleAddMoney(e, mainGoal.id)} className="flex gap-3 mb-8 items-end">
-                        <div className="flex-1 space-y-1">
-                          <label className="font-sans uppercase tracking-[0.15em] text-[0.65rem] font-semibold text-[#d0c5af]">Amount to Add (€)</label>
+                        <div className="flex-1 space-y-1.5">
+                          <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Amount to Add (€)</label>
                           <input
                             type="number" min="0" step="any" autoFocus
-                            className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-1.5 focus:outline-none text-on-surface"
+                            className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
                             placeholder="0.00"
                             value={addAmount}
                             onChange={e => setAddAmount(e.target.value)}
@@ -321,159 +314,256 @@ export default function SavingsGoals({ session, onNavigate }) {
                         <button
                           type="submit"
                           disabled={addStatus === 'loading'}
-                          className="px-6 py-1.5 font-sans uppercase tracking-widest text-[9px] font-bold text-[#3c2f00] disabled:opacity-50"
-                          style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}
+                          className="px-6 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
                         >
                           {addStatus === 'loading' ? '...' : addStatus === 'success' ? '✓' : 'Save'}
                         </button>
-                        <button type="button" onClick={() => setAddMoneyId(null)} className="px-3 py-1.5 text-gray-500 border border-[#4d4635] font-sans uppercase tracking-widest text-[9px] hover:text-on-surface">×</button>
+                        <button type="button" onClick={() => setAddMoneyId(null)} className="px-4 py-3 text-on-surface-variant border border-outline-variant/20 rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors">×</button>
                       </form>
                     )}
 
                     <div className="mt-auto">
-                      <div className="flex justify-between items-end mb-4">
-                        <span className="text-5xl font-sans font-light text-[#f2ca50]">{pctOf(mainGoal).toFixed(1)}%</span>
-                        <span className="text-xs text-[#99907c] uppercase tracking-[0.2em]">Completion Path</span>
+                      <div className="flex items-baseline justify-between mb-4">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-5xl font-extrabold tracking-tighter text-on-surface">{fmtEur(mainGoal.current_amount)}</span>
+                          <span className="text-on-surface-variant font-medium">/ {fmtEur(mainGoal.target_amount)}</span>
+                        </div>
+                        <span className="text-2xl font-bold text-primary">{pctOf(mainGoal).toFixed(1)}%</span>
                       </div>
-                      <div className="w-full h-[2px] bg-[#2a2a2a] relative">
+                      <div className="h-4 w-full bg-surface-container rounded-full overflow-hidden">
                         <div
-                          className="absolute top-0 left-0 h-full transition-all duration-700"
-                          style={{ width: `${pctOf(mainGoal)}%`, background: 'linear-gradient(to right, #f2ca50, #d4af37)' }}
+                          className="h-full bg-gradient-to-r from-primary to-primary-container rounded-full transition-all duration-700"
+                          style={{ width: `${pctOf(mainGoal)}%` }}
                         />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-outline-variant/10">
+                      <div>
+                        <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Current Savings</p>
+                        <p className="text-lg font-bold">{fmtEur(mainGoal.current_amount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Progress</p>
+                        <p className="text-lg font-bold text-secondary">{pctOf(mainGoal).toFixed(1)}%</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Remaining</p>
+                        <p className="text-lg font-bold text-on-surface/50">{fmtEur(Math.max(0, mainGoal.target_amount - mainGoal.current_amount))}</p>
                       </div>
                     </div>
                   </>
                 ) : (
-                  /* Empty state */
                   <div className="flex flex-col items-center justify-center h-full text-center py-20">
-                    <span className="material-symbols-outlined text-4xl text-[#4d4635] mb-4">savings</span>
-                    <p className="font-sans uppercase tracking-widest text-[10px] text-gray-600 mb-2">No Goals Yet</p>
-                    <p className="text-sm text-gray-600 font-serif italic">Click "Initiate New Goal" to begin</p>
+                    <span className="material-symbols-outlined text-on-surface-variant/30 mb-4" style={{ fontSize: '48px' }}>savings</span>
+                    <p className="text-sm font-bold text-on-surface-variant mb-1">No Goals Yet</p>
+                    <p className="text-sm text-on-surface-variant/60">Click "Add New Aspiration" to begin</p>
                   </div>
                 )}
               </div>
 
-              {/* ── Smaller Goal Cards ── */}
-              {restGoals.map(goal => (
-                <div key={goal.id} className="col-span-12 lg:col-span-6 bg-[#2a2a2a] p-8 flex flex-col justify-between group">
+              {/* ── Secondary Goal Card ── */}
+              {restGoals[0] ? (
+                <div key={restGoals[0].id} className="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-[2rem] p-8 border border-outline-variant/10 flex flex-col shadow-sm group">
                   <div className="flex justify-between items-start mb-8">
-                    <div>
-                      <h3 className="text-2xl font-serif italic text-on-surface">{goal.name}</h3>
-                      <p className="text-[10px] text-[#99907c] uppercase tracking-widest mt-1">Savings Goal</p>
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                      <span className="material-symbols-outlined">star</span>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <div className="text-right">
-                        <span className="text-xl font-sans text-on-surface">{fmtEur(goal.current_amount)}</span>
-                        <p className="text-[10px] text-[#99907c] uppercase tracking-tighter mt-1">Target: {fmtEur(goal.target_amount)}</p>
-                      </div>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => { setAddMoneyId(addMoneyId === goal.id ? null : goal.id); setAddAmount('') }}
-                          className="flex items-center gap-1 px-2 py-1 font-sans uppercase tracking-widest text-[8px] border border-[#f2ca50]/30 text-[#f2ca50] hover:bg-[#f2ca50]/10 transition-colors"
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>add</span>
-                          Add
-                        </button>
-                        <button
-                          onClick={() => handleDelete(goal.id)}
-                          className="p-1 text-gray-600 hover:text-[#ffb4ab] transition-colors"
-                          title="Delete goal"
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
-                        </button>
-                      </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => { setAddMoneyId(addMoneyId === restGoals[0].id ? null : restGoals[0].id); setAddAmount('') }}
+                        className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-widest border border-primary/20 text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>add</span>
+                        Add
+                      </button>
+                      <button
+                        onClick={() => handleDelete(restGoals[0].id)}
+                        className="p-1 text-on-surface-variant hover:text-tertiary transition-colors"
+                        title="Delete goal"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                      </button>
                     </div>
                   </div>
+                  <h3 className="text-2xl font-bold mb-1">{restGoals[0].name}</h3>
+                  <p className="text-on-surface-variant text-sm mb-8">Savings Goal</p>
 
-                  {/* Add money inline */}
-                  {addMoneyId === goal.id && (
-                    <form onSubmit={e => handleAddMoney(e, goal.id)} className="flex gap-2 mb-6 items-end">
+                  {addMoneyId === restGoals[0].id && (
+                    <form onSubmit={e => handleAddMoney(e, restGoals[0].id)} className="flex gap-2 mb-6 items-end">
                       <div className="flex-1 space-y-1">
-                        <label className="font-sans uppercase tracking-[0.15em] text-[0.6rem] font-semibold text-[#d0c5af]">Amount (€)</label>
+                        <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Amount (€)</label>
                         <input
                           type="number" min="0" step="any" autoFocus
-                          className="w-full bg-transparent border-b border-[#99907c] focus:border-[#f2ca50] text-sm py-1 focus:outline-none text-on-surface"
+                          className="w-full bg-surface-container-low border-none rounded-xl py-2.5 px-3 text-sm focus:ring-1 focus:ring-primary/20"
                           placeholder="0.00"
                           value={addAmount}
                           onChange={e => setAddAmount(e.target.value)}
                           required
                         />
                       </div>
-                      <button
-                        type="submit"
-                        disabled={addStatus === 'loading'}
-                        className="px-4 py-1 font-sans uppercase tracking-widest text-[9px] font-bold text-[#3c2f00] disabled:opacity-50"
-                        style={{ background: 'linear-gradient(to bottom, #f2ca50, #d4af37)' }}
-                      >
+                      <button type="submit" disabled={addStatus === 'loading'} className="px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-xs disabled:opacity-50">
                         {addStatus === 'success' ? '✓' : 'Save'}
                       </button>
-                      <button type="button" onClick={() => setAddMoneyId(null)} className="px-2 py-1 text-gray-500 font-sans uppercase tracking-widest text-[9px] border border-[#4d4635]">×</button>
+                      <button type="button" onClick={() => setAddMoneyId(null)} className="px-3 py-2.5 text-on-surface-variant border border-outline-variant/20 rounded-xl text-xs font-semibold">×</button>
                     </form>
                   )}
 
-                  <div>
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-xs font-sans text-on-surface">{pctOf(goal).toFixed(1)}%</span>
-                      <span className="text-[9px] text-[#99907c] uppercase tracking-widest">
-                        {pctOf(goal) >= 100 ? 'Complete' : pctOf(goal) >= 75 ? 'Final Phase' : pctOf(goal) >= 50 ? 'Growth Phase' : 'Accumulation'}
-                      </span>
+                  <div className="mb-6">
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-bold">{pctOf(restGoals[0]).toFixed(1)}% Complete</span>
                     </div>
-                    <div className="w-full h-1 bg-[#131313] relative">
-                      <div
-                        className="absolute top-0 left-0 h-full transition-all duration-700"
-                        style={{ width: `${pctOf(goal)}%`, background: 'linear-gradient(to right, #f2ca50, #d4af37)' }}
-                      />
+                    <div className="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                      <div className="h-full bg-primary-container rounded-full transition-all duration-700" style={{ width: `${pctOf(restGoals[0])}%` }} />
+                    </div>
+                  </div>
+                  <div className="space-y-3 mt-auto">
+                    <div className="flex justify-between items-center py-3 border-b border-outline-variant/5">
+                      <span className="text-sm text-on-surface-variant">Saved</span>
+                      <span className="font-bold">{fmtEur(restGoals[0].current_amount)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-on-surface-variant">Goal</span>
+                      <span className="font-bold">{fmtEur(restGoals[0].target_amount)}</span>
                     </div>
                   </div>
                 </div>
+              ) : (
+                /* Empty add card */
+                <div
+                  onClick={() => setShowForm(true)}
+                  className="col-span-12 lg:col-span-4 border-2 border-dashed border-outline-variant/30 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center hover:bg-surface-container-low/50 hover:border-primary/30 transition-all cursor-pointer group"
+                >
+                  <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-on-surface-variant">add_circle</span>
+                  </div>
+                  <h4 className="text-xl font-bold text-on-surface mb-1">New Aspiration</h4>
+                  <p className="text-on-surface-variant text-sm px-6">What is the next chapter of your financial story?</p>
+                </div>
+              )}
+
+              {/* ── Additional Small Goal Cards ── */}
+              {restGoals.slice(1).map(goal => (
+                <div key={goal.id} className="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-low rounded-[2rem] p-8 flex flex-col group">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>savings</span>
+                    </div>
+                    <h4 className="font-bold text-xl">{goal.name}</h4>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-6">
+                    <span className="text-3xl font-extrabold">{fmtEur(goal.current_amount)}</span>
+                    <span className="text-on-surface-variant text-sm">of {fmtEur(goal.target_amount)}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden mb-4">
+                    <div className="h-full bg-secondary transition-all duration-700" style={{ width: `${pctOf(goal)}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">
+                    <span>{pctOf(goal) >= 100 ? 'COMPLETE' : pctOf(goal) >= 75 ? 'FINAL PHASE' : 'ON TRACK'}</span>
+                    <span className="text-secondary">{pctOf(goal).toFixed(1)}%</span>
+                  </div>
+
+                  {addMoneyId === goal.id && (
+                    <form onSubmit={e => handleAddMoney(e, goal.id)} className="flex gap-2 mb-4 items-end">
+                      <div className="flex-1 space-y-1">
+                        <input
+                          type="number" min="0" step="any" autoFocus
+                          className="w-full bg-surface-container-lowest border-none rounded-xl py-2.5 px-3 text-sm focus:ring-1 focus:ring-primary/20"
+                          placeholder="Amount (€)"
+                          value={addAmount}
+                          onChange={e => setAddAmount(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <button type="submit" disabled={addStatus === 'loading'} className="px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-xs disabled:opacity-50">
+                        {addStatus === 'success' ? '✓' : 'Save'}
+                      </button>
+                      <button type="button" onClick={() => setAddMoneyId(null)} className="px-2.5 py-2.5 text-on-surface-variant border border-outline-variant/20 rounded-xl text-xs">×</button>
+                    </form>
+                  )}
+
+                  <div className="flex gap-2 mt-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => { setAddMoneyId(addMoneyId === goal.id ? null : goal.id); setAddAmount('') }}
+                      className="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest border border-primary/20 text-primary hover:bg-primary/5 rounded-xl transition-colors"
+                    >
+                      Add Money
+                    </button>
+                    <button
+                      onClick={() => handleDelete(goal.id)}
+                      className="p-2 text-on-surface-variant hover:text-tertiary border border-outline-variant/20 hover:border-tertiary/20 rounded-xl transition-colors"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                    </button>
+                  </div>
+                </div>
               ))}
+
+              {/* ── Add new card (always shown when there are restGoals) ── */}
+              {restGoals.length > 0 && (
+                <div
+                  onClick={() => setShowForm(true)}
+                  className="col-span-12 md:col-span-6 lg:col-span-4 border-2 border-dashed border-outline-variant/30 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center hover:bg-surface-container-low/50 hover:border-primary/30 transition-all cursor-pointer group"
+                >
+                  <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-on-surface-variant">add_circle</span>
+                  </div>
+                  <h4 className="text-xl font-bold text-on-surface mb-1">New Aspiration</h4>
+                  <p className="text-on-surface-variant text-sm px-6">What is the next chapter of your financial story?</p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* ── Capital Velocity ── */}
-          <div className="flex flex-col lg:flex-row gap-16 items-start">
-            <div className="lg:w-1/3">
-              <h3 className="text-3xl font-serif italic text-on-surface mb-6">Capital Velocity</h3>
-              <p className="text-sm text-[#99907c] leading-loose mb-8">
-                {goals.length > 0
-                  ? `You have ${goals.length} active goal${goals.length > 1 ? 's' : ''} with an overall completion rate of ${overallPct}%. Keep adding to your goals to accelerate your trajectory.`
-                  : 'Create savings goals to track your capital velocity and monitor your progress over time.'}
-              </p>
-              <div className="space-y-6">
-                <div className="flex justify-between border-b border-[#4d4635]/10 pb-4">
-                  <span className="text-xs uppercase tracking-widest text-[#99907c]">Total Saved</span>
-                  <span className="text-sm text-on-surface">{fmtEur(totalSaved)}</span>
+          {/* ── Savings Velocity Summary ── */}
+          <section className="bg-surface-container-lowest rounded-[2rem] p-10 border border-outline-variant/10 shadow-sm whisper-graph">
+            <div className="flex items-start gap-12 flex-col lg:flex-row">
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold mb-4">Savings Velocity</h3>
+                <p className="text-on-surface-variant mb-8 leading-relaxed">
+                  {goals.length > 0
+                    ? `You have ${goals.length} active goal${goals.length > 1 ? 's' : ''} with an overall completion rate of ${overallPct}%. Keep adding to your goals to accelerate your trajectory.`
+                    : 'Create savings goals to track your capital velocity and monitor your progress over time.'}
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95"
+                  >
+                    Add New Goal
+                  </button>
+                  <button
+                    onClick={() => onNavigate('portfolio')}
+                    className="bg-surface-container text-on-surface px-6 py-3 rounded-xl font-bold text-sm transition-all hover:bg-surface-container-high active:scale-95"
+                  >
+                    View Portfolio
+                  </button>
                 </div>
-                <div className="flex justify-between border-b border-[#4d4635]/10 pb-4">
-                  <span className="text-xs uppercase tracking-widest text-[#99907c]">Total Target</span>
-                  <span className="text-sm text-on-surface">{fmtEur(totalTarget)}</span>
+              </div>
+              <div className="w-full lg:w-64 flex flex-col gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/5">
+                  <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Total Saved</p>
+                  <p className="text-3xl font-extrabold tracking-tighter">{fmtEur(totalSaved)}</p>
                 </div>
-                <div className="flex justify-between border-b border-[#4d4635]/10 pb-4">
-                  <span className="text-xs uppercase tracking-widest text-[#99907c]">Overall Progress</span>
-                  <span className="text-sm text-[#f2ca50]">{overallPct}%</span>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/5">
+                  <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Overall Progress</p>
+                  <p className="text-3xl font-extrabold tracking-tighter text-secondary">{overallPct}%</p>
                 </div>
               </div>
             </div>
-            <div className="lg:w-2/3 w-full bg-[#1c1b1b] p-10 h-64 flex items-center justify-center border border-[#4d4635]/5">
-              <div className="text-center">
-                <span className="material-symbols-outlined text-4xl text-[#f2ca50] mb-4 opacity-50" style={{ fontSize: '48px' }}>auto_graph</span>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-[#99907c]">Interactive Projection Module</p>
-                <p className="text-xs text-[#f2ca50] mt-2 italic font-serif">Available in Sovereign Tier</p>
-              </div>
-            </div>
-          </div>
+          </section>
+
         </div>
 
         {/* ── Footer ── */}
-        <footer className="flex flex-col items-center gap-4 w-full py-12 px-8 mt-auto border-t border-[#e5e2e1]/15 bg-[#131313]">
-          <div className="font-serif italic text-sm text-[#f2ca50]">FinanceOS</div>
+        <footer className="py-8 px-10 flex flex-col items-center gap-3 border-t border-outline-variant/20 mt-auto bg-surface">
           <div className="flex gap-8">
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Terms</a>
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Privacy</a>
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Compliance</a>
-            <a className="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Contact</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Terms</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Privacy</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Compliance</a>
+            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Contact</a>
           </div>
-          <p className="font-sans text-[10px] uppercase tracking-widest text-gray-600 mt-4">© FinanceOS. All rights reserved.</p>
+          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">© FinanceOS. All rights reserved.</p>
         </footer>
 
       </main>
