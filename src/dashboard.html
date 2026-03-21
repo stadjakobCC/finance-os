@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinanceOS — Home Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,600;1,6..72,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#d4af37",
+                        "background": "#131313",
+                        "on-secondary-container": "#bcb59e",
+                        "outline": "#99907c",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#d0c5af",
+                        "secondary-fixed": "#eae2ca",
+                        "on-primary": "#3c2f00",
+                        "inverse-on-surface": "#313030",
+                        "surface-bright": "#393939",
+                        "primary-fixed-dim": "#e9c349",
+                        "surface-variant": "#353534",
+                        "tertiary-container": "#9bb9b0",
+                        "on-background": "#e5e2e1",
+                        "inverse-surface": "#e5e2e1",
+                        "on-secondary": "#343020",
+                        "primary-fixed": "#ffe088",
+                        "on-tertiary-container": "#2f4a43",
+                        "surface": "#131313",
+                        "tertiary": "#b6d5cb",
+                        "surface-container": "#201f1f",
+                        "surface-container-highest": "#353534",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-dim": "#131313",
+                        "tertiary-fixed-dim": "#afcdc4",
+                        "secondary-container": "#4b4735",
+                        "on-secondary-fixed-variant": "#4b4735",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#e9c349",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#03201a",
+                        "surface-container-high": "#2a2a2a",
+                        "on-surface": "#e5e2e1",
+                        "secondary-fixed-dim": "#cec6af",
+                        "inverse-primary": "#735c00",
+                        "tertiary-fixed": "#cae9e0",
+                        "outline-variant": "#4d4635",
+                        "on-primary-container": "#554300",
+                        "primary": "#f2ca50",
+                        "on-secondary-fixed": "#1f1c0d",
+                        "secondary": "#cec6af",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-fixed": "#241a00",
+                        "on-tertiary": "#1a352f",
+                        "on-primary-fixed-variant": "#574500",
+                        "on-tertiary-fixed-variant": "#314c45"
+                    },
+                    fontFamily: {
+                        "headline": ["Newsreader"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0rem", "lg": "0rem", "xl": "0rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .gilded-gradient {
+            background: linear-gradient(180deg, #f2ca50 0%, #d4af37 100%);
+        }
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            background-color: rgba(53, 53, 52, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary/30">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-8 bg-[#1c1b1b] dark:bg-[#1c1b1b] w-64 z-50 border-none rounded-none">
+<div class="px-8 mb-12">
+<h1 class="text-2xl font-serif italic text-[#f2ca50]">FinanceOS</h1>
+<p class="font-sans uppercase tracking-[0.1em] text-[10px] text-gray-500 mt-1">Sovereign Curator</p>
+</div>
+<nav class="flex-1 flex flex-col">
+<!-- Dashboard Tab (Active) -->
+<a class="flex items-center gap-4 px-8 py-4 text-[#f2ca50] border-l-2 border-[#f2ca50] font-bold bg-[#2a2a2a]/50 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-sans uppercase tracking-[0.1em] text-xs">Dashboard</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="flex items-center gap-4 px-8 py-4 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 scale-98 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="font-sans uppercase tracking-[0.1em] text-xs">Monthly Overview</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 scale-98 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-sans uppercase tracking-[0.1em] text-xs">Portfolio</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-gray-500 hover:text-gray-200 hover:bg-[#2a2a2a] transition-all duration-300 scale-98 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="savings">savings</span>
+<span class="font-sans uppercase tracking-[0.1em] text-xs">Savings Goals</span>
+</a>
+</nav>
+<div class="px-8 mt-auto flex flex-col gap-2">
+<a class="flex items-center gap-4 py-3 text-gray-500 hover:text-gray-200 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-sans uppercase tracking-[0.1em] text-xs">Settings</span>
+</a>
+<a class="flex items-center gap-4 py-3 text-gray-500 hover:text-gray-200 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-sans uppercase tracking-[0.1em] text-xs">Support</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed left-64 right-0 top-0 z-40 bg-[#131313]/80 backdrop-blur-xl flex justify-between items-center px-8 py-4 max-w-[calc(100%-16rem)]">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 text-lg" data-icon="search">search</span>
+<input class="bg-transparent border-none border-b border-outline-variant/30 focus:ring-0 focus:border-primary w-full pl-8 py-1 text-[10px] tracking-widest uppercase font-sans placeholder:text-gray-600" placeholder="SEARCH ASSETS..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-gray-400 hover:text-[#f2ca50] transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="flex items-center gap-4">
+<span class="font-headline italic text-on-surface text-lg">James</span>
+<div class="w-10 h-10 bg-surface-container-high border border-outline-variant/20 flex items-center justify-center">
+<img alt="James" class="w-full h-full object-cover" data-alt="Professional portrait of a man named James" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnZ7PN4uYeav-iKG9w5r9AZuJ2qIKsoiEKelx7B7g5LsJ1kTRqxzs7djX1IjPel9aiKkdXvjMW1Xuq9eAXps4LulXkBMJfzHuiL4a8QTODEciSHi7s5tdOz2zfS9Yj5WsiIa4a6MWgSGr08E_EZXAYm3F79q_EukhunshhpawFIamcKb3GT9q2ZEAxMjhkyaFxGQVsJj3tTd_B1Qh_YuTnSJHAkuNKbCS9h5ipXWTj36gIqt4ZcuEeAdqLleW2ggvXXyrBfPH0F28p"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 pb-12 px-12 min-h-screen">
+<!-- Hero Section: Total Assets -->
+<section class="mb-16">
+<p class="font-sans uppercase tracking-[0.2em] text-xs text-outline mb-4">Current Liquidity &amp; Value</p>
+<div class="flex items-baseline gap-4">
+<h2 class="font-headline italic text-7xl md:text-8xl text-primary font-bold">€ 4,281,090</h2>
+<span class="font-sans text-tertiary text-sm tracking-widest uppercase">+2.4% THIS MONTH</span>
+</div>
+<div class="mt-8 flex gap-12">
+<div>
+<p class="font-sans uppercase tracking-widest text-[10px] text-gray-500">Essential Ratio</p>
+<p class="text-xl font-headline italic mt-1">12.4%</p>
+</div>
+<div>
+<p class="font-sans uppercase tracking-widest text-[10px] text-gray-500">Asset Velocity</p>
+<p class="text-xl font-headline italic mt-1">High</p>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Panel: Transactions -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
+<div class="bg-surface-container-low p-8 relative">
+<div class="flex justify-between items-center mb-10">
+<h3 class="font-headline italic text-2xl text-on-surface">Recent Transactions</h3>
+<a class="font-sans uppercase tracking-widest text-[10px] text-primary hover:text-white transition-colors" href="#">View Journal</a>
+</div>
+<div class="space-y-8">
+<!-- Transaction 1 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<div>
+<p class="font-sans uppercase tracking-widest text-[11px] text-on-surface">L'Ambroisie Paris</p>
+<p class="font-sans text-[10px] text-gray-500 tracking-tighter">OCT 14, 2023 • GASTRONOMY</p>
+</div>
+</div>
+<p class="font-headline italic text-lg text-on-surface group-hover:text-primary transition-colors">- € 840.00</p>
+</div>
+<!-- Transaction 2 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="flight_takeoff">flight_takeoff</span>
+</div>
+<div>
+<p class="font-sans uppercase tracking-widest text-[11px] text-on-surface">NetJets Private Ltd</p>
+<p class="font-sans text-[10px] text-gray-500 tracking-tighter">OCT 12, 2023 • TRAVEL</p>
+</div>
+</div>
+<p class="font-headline italic text-lg text-on-surface group-hover:text-primary transition-colors">- € 12,400.00</p>
+</div>
+<!-- Transaction 3 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<div>
+<p class="font-sans uppercase tracking-widest text-[11px] text-on-surface">Dividend Payout</p>
+<p class="font-sans text-[10px] text-gray-500 tracking-tighter">OCT 10, 2023 • INVESTMENTS</p>
+</div>
+</div>
+<p class="font-headline italic text-lg text-tertiary group-hover:text-primary transition-colors">+ € 4,200.00</p>
+</div>
+<!-- Transaction 4 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="apartment">apartment</span>
+</div>
+<div>
+<p class="font-sans uppercase tracking-widest text-[11px] text-on-surface">Property Maintenance</p>
+<p class="font-sans text-[10px] text-gray-500 tracking-tighter">OCT 08, 2023 • REAL ESTATE</p>
+</div>
+</div>
+<p class="font-headline italic text-lg text-on-surface group-hover:text-primary transition-colors">- € 2,150.00</p>
+</div>
+<!-- Transaction 5 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</div>
+<div>
+<p class="font-sans uppercase tracking-widest text-[11px] text-on-surface">Savile Row Tailors</p>
+<p class="font-sans text-[10px] text-gray-500 tracking-tighter">OCT 05, 2023 • LIFESTYLE</p>
+</div>
+</div>
+<p class="font-headline italic text-lg text-on-surface group-hover:text-primary transition-colors">- € 3,600.00</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Analytics -->
+<div class="col-span-12 lg:col-span-7 flex flex-col gap-8">
+<!-- Line Chart Comparison -->
+<div class="bg-surface-container-low p-8 h-80 relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline italic text-2xl text-on-surface">Spending Trajectory</h3>
+<p class="font-sans uppercase tracking-widest text-[10px] text-gray-500 mt-1">VS PREVIOUS PERIOD</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="font-sans text-[9px] uppercase tracking-widest">October</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<span class="font-sans text-[9px] uppercase tracking-widest">September</span>
+</div>
+</div>
+</div>
+<!-- Mock Line Chart -->
+<div class="absolute bottom-12 left-8 right-8 h-32 flex items-end justify-between">
+<div class="w-full h-full border-b border-l border-outline-variant/20 relative">
+<!-- SVG for line path -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none">
+<path class="text-primary opacity-80" d="M0,80 Q100,20 200,60 T400,10 T600,40" fill="none" stroke="currentColor" stroke-width="1.5"></path>
+<path class="text-gray-600 opacity-40" d="M0,100 Q150,50 300,90 T600,60" fill="none" stroke="currentColor" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="absolute bottom-4 left-8 right-8 flex justify-between text-[8px] tracking-widest text-gray-600 uppercase font-sans">
+<span>WK 01</span>
+<span>WK 02</span>
+<span>WK 03</span>
+<span>WK 04</span>
+</div>
+</div>
+<!-- Donut Chart & Distribution -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-surface-container-low p-8 flex flex-col justify-center items-center relative h-64">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle cx="64" cy="64" fill="transparent" r="58" stroke="#2a2a2a" stroke-width="8"></circle>
+<circle cx="64" cy="64" fill="transparent" r="58" stroke="#f2ca50" stroke-dasharray="364.4" stroke-dashoffset="100" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline italic text-2xl">72%</span>
+<span class="font-sans text-[8px] uppercase tracking-tighter text-gray-500">Essential</span>
+</div>
+</div>
+<h4 class="font-sans uppercase tracking-[0.2em] text-[10px] text-on-surface mt-6">Spending Composition</h4>
+</div>
+<div class="bg-surface-container-low p-8 flex flex-col justify-between">
+<div>
+<h4 class="font-headline italic text-xl mb-4">Allocation Strategy</h4>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-[10px] tracking-widest uppercase mb-2">
+<span class="text-gray-400">Essential Wealth</span>
+<span class="text-primary">€ 28,400</span>
+</div>
+<div class="w-full h-[2px] bg-surface-container-high">
+<div class="h-full bg-primary w-[72%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[10px] tracking-widest uppercase mb-2">
+<span class="text-gray-400">Speculative / Optional</span>
+<span class="text-on-surface">€ 11,200</span>
+</div>
+<div class="w-full h-[2px] bg-surface-container-high">
+<div class="h-full bg-secondary w-[28%]"></div>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full gilded-gradient py-3 text-on-primary font-sans uppercase tracking-[0.2em] text-[10px] font-bold mt-6">Optimize Portfolio</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="ml-64 bg-[#131313] py-12 px-8 flex flex-col items-center gap-4 w-full border-t border-[#e5e2e1]/15">
+<div class="flex gap-12 mb-4">
+<a class="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Terms</a>
+<a class="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Privacy</a>
+<a class="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Compliance</a>
+<a class="font-sans text-[10px] uppercase tracking-widest text-gray-600 hover:text-white transition-colors" href="#">Contact</a>
+</div>
+<p class="font-serif italic text-sm text-[#f2ca50]">FinanceOS</p>
+<p class="font-sans text-[10px] uppercase tracking-widest text-gray-600">© FinanceOS. All rights reserved.</p>
+</footer>
+</body></html>
