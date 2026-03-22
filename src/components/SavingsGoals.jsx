@@ -19,6 +19,7 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
   const [addMoneyId,  setAddMoneyId]  = useState(null)
   const [addAmount,   setAddAmount]   = useState('')
   const [addStatus,   setAddStatus]   = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => { loadGoals() }, []) // eslint-disable-line
 
@@ -108,8 +109,12 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
   return (
     <div className="min-h-screen flex bg-surface">
 
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* ── Sidebar ── */}
-      <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
+      <aside className={`fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="mb-8 px-4 py-2">
           <button onClick={() => onNavigate('dashboard')} className="text-left hover:opacity-75 transition-opacity">
             <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
@@ -117,15 +122,15 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
           </button>
         </div>
         <nav className="flex-1 space-y-1">
-          <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('dashboard') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">dashboard</span>
             <span>Dashboard</span>
           </a>
-          <a onClick={() => onNavigate('monthly')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('monthly') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">calendar_month</span>
             <span>Overview</span>
           </a>
-          <a onClick={() => onNavigate('portfolio')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('portfolio') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">account_balance_wallet</span>
             <span>Portfolio</span>
           </a>
@@ -155,10 +160,17 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
       </aside>
 
       {/* ── Main ── */}
-      <main className="ml-64 flex-1 flex flex-col min-h-screen">
+      <main className="ml-0 md:ml-64 flex-1 flex flex-col min-h-screen">
 
         {/* ── Header ── */}
-        <header className="flex justify-end items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+        <header className="flex justify-between items-center w-full px-4 md:px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+          <button
+            className="md:hidden p-2 -ml-2 text-on-surface-variant hover:opacity-70 transition-opacity"
+            onClick={() => setSidebarOpen(s => !s)}
+            aria-label="Open menu"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
           <div className="flex items-center gap-4">
             <button
               onClick={toggleDark}
@@ -171,10 +183,10 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
         </header>
 
         {/* ── Content ── */}
-        <div className="p-10 max-w-7xl mx-auto w-full">
+        <div className="p-4 md:p-10 max-w-7xl mx-auto w-full">
 
           {/* ── Page Header ── */}
-          <div className="flex justify-between items-end mb-12">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8 md:mb-12">
             <div>
               <h2 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Future Aspirations</h2>
               <p className="text-on-surface-variant">Curating your financial milestones with intentionality.</p>
@@ -249,7 +261,7 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
           {loading ? (
             <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">Loading...</p>
           ) : (
-            <div className="grid grid-cols-12 gap-8 mb-16">
+            <div className="grid grid-cols-12 gap-4 md:gap-8 mb-10 md:mb-16">
 
               {/* ── Main Goal Card (Featured) ── */}
               <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-[2rem] p-8 relative overflow-hidden flex flex-col group border border-outline-variant/10 shadow-sm min-h-[360px]">

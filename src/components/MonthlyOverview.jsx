@@ -80,6 +80,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
   const [expStatus, setExpStatus] = useState(null)
   const [incStatus, setIncStatus] = useState(null)
   const [modal,     setModal]     = useState(null) // 'income' | 'expense' | null
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Date range for current month view
   const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`
@@ -251,8 +252,12 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
   return (
     <div className="flex min-h-screen bg-surface">
 
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* ── Sidebar ── */}
-      <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
+      <aside className={`fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="mb-8 px-4 py-2">
           <button onClick={() => onNavigate('dashboard')} className="text-left hover:opacity-75 transition-opacity">
             <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
@@ -260,7 +265,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
           </button>
         </div>
         <nav className="flex-1 space-y-1">
-          <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('dashboard') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">dashboard</span>
             <span>Dashboard</span>
           </a>
@@ -268,11 +273,11 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
             <span className="material-symbols-outlined">calendar_month</span>
             <span>Overview</span>
           </a>
-          <a onClick={() => onNavigate('portfolio')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('portfolio') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">account_balance_wallet</span>
             <span>Portfolio</span>
           </a>
-          <a onClick={() => onNavigate('savings')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('savings') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">savings</span>
             <span>Savings</span>
           </a>
@@ -291,16 +296,23 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
       </aside>
 
       {/* ── Main ── */}
-      <main className="flex-1 ml-64 min-h-screen flex flex-col">
+      <main className="flex-1 ml-0 md:ml-64 min-h-screen flex flex-col">
 
         {/* ── Header ── */}
-        <header className="flex justify-between items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
-          <div className="flex items-center gap-4">
+        <header className="flex justify-between items-center w-full px-4 md:px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+          <div className="flex items-center gap-2 md:gap-4">
+            <button
+              className="md:hidden p-2 -ml-2 text-on-surface-variant hover:opacity-70 transition-opacity"
+              onClick={() => setSidebarOpen(s => !s)}
+              aria-label="Open menu"
+            >
+              <span className="material-symbols-outlined">menu</span>
+            </button>
             <div className="flex items-center gap-3 text-on-surface">
               <button className="p-2 hover:bg-surface-container transition-colors rounded-xl" onClick={prevMonth}>
                 <span className="material-symbols-outlined text-on-surface-variant">chevron_left</span>
               </button>
-              <h2 className="text-2xl font-extrabold tracking-tight text-on-surface">{MONTH_NAMES[month]} {year}</h2>
+              <h2 className="text-lg md:text-2xl font-extrabold tracking-tight text-on-surface">{MONTH_NAMES[month]} {year}</h2>
               <button
                 className="p-2 hover:bg-surface-container transition-colors rounded-xl disabled:opacity-30 disabled:cursor-not-allowed"
                 onClick={nextMonth}
@@ -321,7 +333,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
           </div>
         </header>
 
-        <div className="px-8 py-10 max-w-7xl mx-auto space-y-12 w-full">
+        <div className="px-4 py-6 md:px-8 md:py-10 max-w-7xl mx-auto space-y-8 md:space-y-12 w-full">
 
           {/* ── Page Heading ── */}
           <section className="flex justify-between items-end">
@@ -394,7 +406,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
           </section>
 
           {/* ── Transaction Hub ── */}
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10">
 
             {/* Financial Ledger */}
             <div className="lg:col-span-2 space-y-8">

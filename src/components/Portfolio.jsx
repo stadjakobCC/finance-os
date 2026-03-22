@@ -72,6 +72,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
   const [formPrice,   setFormPrice]   = useState('')
   const [formStatus,  setFormStatus]  = useState(null) // null | 'loading' | 'success' | 'error'
   const [rowCurrency, setRowCurrency] = useState({})
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     loadHoldings()
@@ -166,8 +167,12 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
   return (
     <div className="min-h-screen flex bg-surface">
 
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* ── Sidebar ── */}
-      <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
+      <aside className={`fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="mb-8 px-4 py-2">
           <button onClick={() => onNavigate('dashboard')} className="text-left hover:opacity-75 transition-opacity">
             <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
@@ -175,11 +180,11 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
           </button>
         </div>
         <nav className="flex-1 space-y-1">
-          <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('dashboard') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">dashboard</span>
             <span>Dashboard</span>
           </a>
-          <a onClick={() => onNavigate('monthly')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('monthly') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">calendar_month</span>
             <span>Overview</span>
           </a>
@@ -187,7 +192,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
             <span className="material-symbols-outlined">account_balance_wallet</span>
             <span>Portfolio</span>
           </a>
-          <a onClick={() => onNavigate('savings')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
+          <a onClick={() => { setSidebarOpen(false); onNavigate('savings') }} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
             <span className="material-symbols-outlined">savings</span>
             <span>Savings</span>
           </a>
@@ -213,10 +218,17 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
       </aside>
 
       {/* ── Main ── */}
-      <main className="ml-64 flex-1 flex flex-col min-h-screen">
+      <main className="ml-0 md:ml-64 flex-1 flex flex-col min-h-screen">
 
         {/* ── Header ── */}
-        <header className="flex justify-end items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+        <header className="flex justify-between items-center w-full px-4 md:px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
+          <button
+            className="md:hidden p-2 -ml-2 text-on-surface-variant hover:opacity-70 transition-opacity"
+            onClick={() => setSidebarOpen(s => !s)}
+            aria-label="Open menu"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
           <div className="flex items-center gap-4">
             <button
               onClick={toggleDark}
@@ -229,7 +241,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
         </header>
 
         {/* ── Content ── */}
-        <div className="p-8 max-w-6xl mx-auto space-y-10 w-full">
+        <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 md:space-y-10 w-full">
 
           {/* ── Portfolio Hero ── */}
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -404,7 +416,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
             {/* Asset Table */}
             <div className="bg-surface-container-lowest rounded-[2rem] overflow-hidden border border-outline-variant/10 shadow-sm">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full min-w-[640px] text-left border-collapse">
                   <thead>
                     <tr className="bg-surface-container-low/50">
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Asset</th>
