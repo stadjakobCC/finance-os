@@ -245,23 +245,23 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
 
           {/* ── Portfolio Hero ── */}
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 bg-surface-container-lowest p-8 rounded-[2rem] shadow-sm border border-outline-variant/10">
-              <div className="flex justify-between items-start mb-6">
+            <div className="md:col-span-2 bg-surface-container-lowest p-4 md:p-8 rounded-[2rem] shadow-sm border border-outline-variant/10">
+              <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-start mb-6">
                 <div>
                   <p className="text-on-surface-variant text-[10px] uppercase tracking-widest font-semibold mb-1">Aggregate Holdings</p>
-                  <h2 className="text-5xl font-extrabold tracking-tighter text-on-surface">
+                  <h2 className="text-2xl md:text-5xl font-extrabold tracking-tighter text-on-surface">
                     {pricesLoading ? '—' : fmtEur(totalValue, 2)}
                   </h2>
                 </div>
-                <div className="flex flex-col items-end">
+                <div className="flex flex-row md:flex-col items-center md:items-end gap-2 md:gap-0">
                   {totalPnlPct !== null && (
                     <span className={`flex items-center font-bold text-sm px-3 py-1 rounded-full ${totalPnl >= 0 ? 'text-secondary bg-secondary-container/20' : 'text-tertiary bg-tertiary/5'}`}>
                       <span className="material-symbols-outlined text-sm mr-1">{totalPnl >= 0 ? 'trending_up' : 'trending_down'}</span>
                       {fmtPct(totalPnlPct)} all time
                     </span>
                   )}
-                  <p className="text-[10px] text-on-surface-variant mt-2 font-medium">
-                    {pricesLoading ? 'Fetching live prices...' : 'Live prices'}
+                  <p className="text-[10px] text-on-surface-variant md:mt-2 font-medium">
+                    {pricesLoading ? 'Fetching...' : 'Live prices'}
                   </p>
                 </div>
               </div>
