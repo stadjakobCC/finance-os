@@ -275,7 +275,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
             </div>
 
             {/* Allocation Breakdown */}
-            <div className="bg-surface-container-low p-8 rounded-[2rem] flex flex-col justify-between border border-outline-variant/10">
+            <div className="bg-surface-container-low p-4 md:p-8 rounded-[2rem] flex flex-col justify-between border border-outline-variant/10">
               <div>
                 <p className="text-on-surface-variant text-[10px] uppercase tracking-widest font-semibold mb-4 text-center">Allocation</p>
                 <div className="relative w-24 h-24 mx-auto mb-4">
@@ -413,9 +413,74 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
               </div>
             )}
 
-            {/* Asset Table */}
+            {/* Asset Table / Cards */}
             <div className="bg-surface-container-lowest rounded-[2rem] overflow-hidden border border-outline-variant/10 shadow-sm">
-              <div className="overflow-x-auto">
+
+              {/* ── Mobile asset cards (< md) ── */}
+              <div className="md:hidden divide-y divide-surface-container/30">
+                {visibleAssets.map(asset => {
+                  const holding      = holdingMap[asset.id]
+                  const eurPrice     = prices[asset.id]
+                  const usdToEur     = prices._usdToEur ?? null
+                  const cur          = rowCurrency[asset.id] ?? 'EUR'
+                  const isUsd        = cur === 'USD'
+                  const displayPrice = eurPrice != null ? (isUsd && usdToEur ? eurPrice / usdToEur : eurPrice) : null
+                  const currentValueEur = holding && eurPrice ? holding.quantity * eurPrice : null
+                  const displayValue    = currentValueEur !== null ? (isUsd && usdToEur ? currentValueEur / usdToEur : currentValueEur) : null
+                  const purchaseValEur  = holding ? holding.quantity * holding.purchase_price : null
+                  const pnlEur          = currentValueEur !== null && purchaseValEur !== null ? currentValueEur - purchaseValEur : null
+                  const pnlPct          = purchaseValEur ? (pnlEur / purchaseValEur) * 100 : null
+                  const isPositive      = pnlEur !== null && pnlEur >= 0
+                  const priceDecimals   = displayPrice !== null && displayPrice < 1 ? 4 : 2
+                  const iconClass = asset.iconStyle === 'gold' ? 'bg-orange-100 text-orange-600'
+                    : asset.iconStyle === 'silver' ? 'bg-surface-container-high text-on-surface-variant'
+                    : asset.iconStyle === 'cash'   ? 'bg-secondary-container/20 text-on-secondary-container'
+                    : 'bg-primary-fixed/30 text-primary'
+                  return (
+                    <div key={asset.id} className="p-4 flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconClass}`}>
+                            <span className="material-symbols-outlined">{asset.icon}</span>
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm">{asset.label}</p>
+                            <p className="text-[10px] text-on-surface-variant font-medium">{asset.ticker}</p>
+                          </div>
+                        </div>
+                        {pnlPct !== null && (
+                          <span className={`text-xs font-bold px-2 py-1 rounded-lg ${isPositive ? 'text-secondary bg-secondary-container/10' : 'text-tertiary bg-tertiary/5'}`}>
+                            {fmtPct(pnlPct)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <p className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold mb-0.5">Price</p>
+                          <p className="text-xs font-bold">{pricesLoading ? '—' : displayPrice !== null ? fmtMoney(displayPrice, cur, priceDecimals) : <span className="text-on-surface-variant/40">N/A</span>}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold mb-0.5">Qty</p>
+                          <p className="text-xs font-bold">{holding ? fmtQty(holding.quantity, asset.id) : <span className="text-on-surface-variant/40">—</span>}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold mb-0.5">Value</p>
+                          <p className="text-xs font-bold">{displayValue !== null ? fmtMoney(displayValue, cur) : <span className="text-on-surface-variant/40">—</span>}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => openForm(asset.id)} className="flex-1 py-2.5 text-xs font-semibold border border-outline-variant/20 text-on-surface-variant rounded-xl hover:bg-surface-container transition-colors">Edit</button>
+                        {holding && (
+                          <button onClick={() => handleDeleteHolding(asset.id)} className="px-4 py-2.5 text-xs font-semibold border border-tertiary/20 text-tertiary rounded-xl hover:bg-tertiary/5 transition-colors">Delete</button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* ── Desktop table (≥ md) ── */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full min-w-[640px] text-left border-collapse">
                   <thead>
                     <tr className="bg-surface-container-low/50">
@@ -567,7 +632,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
                   </tbody>
                 </table>
               </div>
-              <div className="bg-surface-container-low/30 px-8 py-4 flex justify-between items-center">
+              <div className="bg-surface-container-low/30 px-4 md:px-8 py-4 flex justify-between items-center">
                 <p className="text-[10px] text-on-surface-variant font-semibold">Showing {visibleAssets.length} of {ASSETS.length} assets</p>
                 <button className="text-xs font-bold text-primary hover:underline">View Full Report</button>
               </div>
@@ -575,8 +640,8 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
           </section>
 
           {/* ── Performance History ── */}
-          <section className="bg-surface-container-lowest rounded-[2rem] p-10 border border-outline-variant/10 shadow-sm">
-            <div className="flex justify-between items-start mb-10">
+          <section className="bg-surface-container-lowest rounded-[2rem] p-4 md:p-10 overflow-hidden border border-outline-variant/10 shadow-sm">
+            <div className="flex justify-between items-start mb-6 md:mb-10">
               <div>
                 <h3 className="text-2xl font-bold mb-1">Performance History</h3>
                 <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-widest">Trailing 12 Months Growth</p>
@@ -589,7 +654,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
             </div>
 
             {/* Decorative bar chart */}
-            <div className="h-48 flex items-end gap-1 w-full">
+            <div className="h-32 md:h-48 flex items-end gap-1 w-full max-w-full overflow-hidden">
               {barHeights.map((h, i) => (
                 <div
                   key={i}
