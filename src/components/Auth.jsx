@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 
-export default function Auth() {
+export default function Auth({ darkMode, toggleDark }) {
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,6 +28,14 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center px-4">
+      <button
+        onClick={toggleDark}
+        className="fixed top-4 right-4 text-on-surface-variant hover:opacity-70 transition-opacity"
+        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
+      </button>
+
       <div className="w-full max-w-md bg-surface-container-lowest rounded-[2rem] p-10 shadow-sm border border-outline-variant/10">
 
         {/* Logo */}

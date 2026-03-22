@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ── Tailwind v4 theme — light Apple-like design from Stitch HTML files ── */
 @theme {
@@ -151,3 +152,77 @@ body {
     appearance: none;
   }
 }
+
+/* ─── Dark mode ──────────────────────────────────────────────────────────── */
+
+.dark {
+  --color-surface:                   #0f0f13;
+  --color-background:                #0f0f13;
+  --color-surface-dim:               #0a0a0e;
+  --color-surface-bright:            #1e1e28;
+  --color-surface-variant:           #2a2a35;
+  --color-surface-container-lowest:  #1a1a23;
+  --color-surface-container-low:     #1e1e28;
+  --color-surface-container:         #22222d;
+  --color-surface-container-high:    #262634;
+  --color-surface-container-highest: #2a2a35;
+  --color-on-surface:                #ffffff;
+  --color-on-surface-variant:        #a0a0b8;
+  --color-inverse-surface:           #1a1a23;
+  --color-inverse-on-surface:        #e5e5e5;
+  --color-outline:                   #55556a;
+  --color-outline-variant:           #2a2a35;
+}
+
+.dark body {
+  background-color: #0f0f13;
+  color: #e5e5e5;
+}
+
+/* ── Sidebar ── */
+.dark aside {
+  background: rgba(22, 22, 30, 0.95) !important;
+  border-right-color: #2a2a35 !important;
+}
+
+.dark aside h1 {
+  color: #ffffff !important;
+}
+
+.dark aside nav a {
+  color: #8a8aaa;
+}
+
+.dark aside nav a:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #c0c0dd !important;
+}
+
+.dark aside nav a.text-blue-600 {
+  color: #6fa3f7 !important;
+  background: rgba(111, 163, 247, 0.12) !important;
+  box-shadow: none !important;
+}
+
+.dark aside > div:last-child {
+  border-top-color: #2a2a35 !important;
+}
+
+/* ── Header ── */
+.dark header {
+  background: rgba(12, 12, 18, 0.95) !important;
+  border-bottom-color: #2a2a35 !important;
+}
+
+/* ── Date picker icon ── */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+}
+
+/* ── Scrollbars ── */
+.dark ::-webkit-scrollbar-track { background: #1a1a23; }
+.dark ::-webkit-scrollbar-thumb { background: #2a2a35; }
+
+/* ── Portfolio orange icon (Gold) ── */
+.dark .bg-orange-100 { background-color: rgba(234, 88, 12, 0.15) !important; }
+.dark .text-orange-600 { color: #fb923c !important; }

@@ -116,7 +116,7 @@ async function fetchAllPrices() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function Portfolio({ session, onNavigate }) {
+export default function Portfolio({ session, onNavigate, darkMode, toggleDark }) {
   const userId  = session.user.id
   const initial = session.user.email.charAt(0).toUpperCase()
 
@@ -229,8 +229,10 @@ export default function Portfolio({ session, onNavigate }) {
       {/* ── Sidebar ── */}
       <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
         <div className="mb-8 px-4 py-2">
-          <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
-          <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
+          <button onClick={() => onNavigate('dashboard')} className="text-left hover:opacity-75 transition-opacity">
+            <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
+            <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
+          </button>
         </div>
         <nav className="flex-1 space-y-1">
           <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
@@ -274,21 +276,14 @@ export default function Portfolio({ session, onNavigate }) {
       <main className="ml-64 flex-1 flex flex-col min-h-screen">
 
         {/* ── Header ── */}
-        <header className="flex justify-between items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
-          <div className="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full w-96">
-            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '18px' }}>search</span>
-            <input
-              className="bg-transparent border-none text-sm text-on-surface-variant focus:ring-0 w-full placeholder:text-on-surface-variant/50"
-              placeholder="Search assets, trends, or documents..."
-              type="text"
-            />
-          </div>
+        <header className="flex justify-end items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
           <div className="flex items-center gap-4">
-            <button className="relative text-on-surface-variant hover:opacity-70 transition-opacity">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
-              <span className="material-symbols-outlined">settings</span>
+            <button
+              onClick={toggleDark}
+              className="text-on-surface-variant hover:opacity-70 transition-opacity"
+              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
             </button>
           </div>
         </header>
@@ -673,54 +668,14 @@ export default function Portfolio({ session, onNavigate }) {
             </div>
           </section>
 
-          {/* ── Bento Bottom ── */}
-          <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="md:col-span-2 bg-inverse-surface text-inverse-on-surface p-8 rounded-[2rem] flex items-center justify-between">
-              <div>
-                <h4 className="text-xl font-bold mb-2">Portfolio Wellness</h4>
-                <p className="text-xs opacity-70 mb-4">Your current diversification is tracked across all asset classes.</p>
-                <div className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-secondary text-sm">verified</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Live Prices Active</span>
-                </div>
-              </div>
-              <div className="w-16 h-16 rounded-full border-4 border-secondary flex items-center justify-center font-bold text-xl shrink-0">
-                {totalValue > 0 ? Math.round(Math.min(100, (holdings.length / ASSETS.length) * 100)) : 0}
-              </div>
-            </div>
-            <div className="bg-primary-container text-on-primary-container p-8 rounded-[2rem] flex flex-col justify-between">
-              <span className="material-symbols-outlined">auto_awesome</span>
-              <div>
-                <p className="text-[10px] uppercase font-bold tracking-widest opacity-80">Holdings</p>
-                <p className="text-lg font-bold">{holdings.length} / {ASSETS.length} Assets</p>
-                <div className="w-full bg-white/20 h-1 rounded-full mt-3">
-                  <div className="bg-white h-full rounded-full" style={{ width: `${(holdings.length / ASSETS.length) * 100}%` }}></div>
-                </div>
-              </div>
-            </div>
-            <div
-              onClick={() => { setFormAsset('bitcoin'); setFormQty(''); setFormPrice(''); setShowForm(s => !s) }}
-              className="bg-surface-container-high p-8 rounded-[2rem] flex flex-col justify-between group cursor-pointer hover:bg-surface-container transition-colors"
-            >
-              <span className="material-symbols-outlined text-on-surface-variant">insights</span>
-              <div>
-                <p className="text-sm font-bold">Add Position</p>
-                <p className="text-[10px] text-on-surface-variant">Record a new holding or update an existing one.</p>
-              </div>
-            </div>
-          </section>
-
         </div>
 
         {/* ── Footer ── */}
-        <footer className="mt-10 py-8 px-8 flex flex-col items-center gap-3 border-t border-outline-variant/20 bg-surface">
-          <div className="flex gap-8">
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Terms</a>
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Privacy</a>
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Compliance</a>
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Contact</a>
-          </div>
-          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">© FinanceOS. All rights reserved.</p>
+        <footer className="mt-10 py-8 px-8 flex items-center justify-center border-t border-outline-variant/20 bg-surface">
+          <p className="text-[10px] text-on-surface-variant/50 font-medium">
+            Built by Jakob ·{' '}
+            <a href="https://github.com/stadjakobCC" target="_blank" rel="noopener noreferrer" className="hover:text-on-surface-variant transition-colors">GitHub</a>
+          </p>
         </footer>
 
       </main>

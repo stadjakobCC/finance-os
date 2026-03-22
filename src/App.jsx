@@ -9,6 +9,13 @@ import SavingsGoals from './components/SavingsGoals'
 function App() {
   const [session, setSession] = useState(undefined)
   const [page,    setPage]    = useState('dashboard')
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
+
+  useEffect(() => {
+    if (darkMode) document.documentElement.classList.add('dark')
+    else document.documentElement.classList.remove('dark')
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light')
+  }, [darkMode])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
@@ -18,6 +25,8 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  const toggleDark = () => setDarkMode(d => !d)
+
   if (session === undefined) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
@@ -26,12 +35,14 @@ function App() {
     )
   }
 
-  if (!session) return <Auth />
+  if (!session) return <Auth darkMode={darkMode} toggleDark={toggleDark} />
 
-  if (page === 'monthly')   return <MonthlyOverview session={session} onNavigate={setPage} />
-  if (page === 'portfolio') return <Portfolio        session={session} onNavigate={setPage} />
-  if (page === 'savings')   return <SavingsGoals    session={session} onNavigate={setPage} />
-  return                           <Dashboard        session={session} onNavigate={setPage} />
+  const pageProps = { session, onNavigate: setPage, darkMode, toggleDark }
+
+  if (page === 'monthly')   return <MonthlyOverview {...pageProps} />
+  if (page === 'portfolio') return <Portfolio        {...pageProps} />
+  if (page === 'savings')   return <SavingsGoals    {...pageProps} />
+  return                           <Dashboard        {...pageProps} />
 }
 
 export default App

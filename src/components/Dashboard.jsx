@@ -46,7 +46,7 @@ function fmtTxDate(dateStr) {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export default function Dashboard({ session, onNavigate }) {
+export default function Dashboard({ session, onNavigate, darkMode, toggleDark }) {
   const today  = new Date()
   const userId = session.user.id
   const initial = session.user.email.charAt(0).toUpperCase()
@@ -146,8 +146,10 @@ export default function Dashboard({ session, onNavigate }) {
       {/* ── Sidebar ── */}
       <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
         <div className="mb-8 px-4 py-2">
-          <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
-          <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
+          <button onClick={() => onNavigate('dashboard')} className="text-left hover:opacity-75 transition-opacity">
+            <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
+            <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
+          </button>
         </div>
         <nav className="flex-1 space-y-1">
           <a
@@ -208,21 +210,14 @@ export default function Dashboard({ session, onNavigate }) {
       <main className="ml-64 min-h-screen flex-1">
 
         {/* ── Header ── */}
-        <header className="flex justify-between items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
-          <div className="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full w-96">
-            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '18px' }}>search</span>
-            <input
-              className="bg-transparent border-none text-sm text-on-surface-variant focus:ring-0 w-full placeholder:text-on-surface-variant/50"
-              placeholder="Search assets or transactions..."
-              type="text"
-            />
-          </div>
+        <header className="flex justify-end items-center w-full px-8 py-4 sticky top-0 bg-white/80 backdrop-blur-md z-30 border-b border-outline-variant/20">
           <div className="flex items-center gap-4">
-            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
-              <span className="material-symbols-outlined">settings</span>
+            <button
+              onClick={toggleDark}
+              className="text-on-surface-variant hover:opacity-70 transition-opacity"
+              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
             </button>
           </div>
         </header>
@@ -236,8 +231,8 @@ export default function Dashboard({ session, onNavigate }) {
               <div className="space-y-2">
                 <span className="text-[11px] font-bold tracking-[0.2em] text-on-surface-variant uppercase">Current Net Balance</span>
                 <div className="flex items-baseline gap-4">
-                  <h2 className="text-7xl font-extrabold tracking-tighter text-on-surface">
-                    {loading ? '—' : fmt(totalAssets)}
+                  <h2 className={`text-7xl font-extrabold tracking-tighter ${totalAssets < 0 ? 'text-tertiary' : 'text-on-surface'}`}>
+                    {loading ? '—' : (totalAssets < 0 ? '-' : '') + fmt(totalAssets)}
                   </h2>
                 </div>
                 <div className="flex gap-10 mt-4">
@@ -247,7 +242,7 @@ export default function Dashboard({ session, onNavigate }) {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold tracking-widest uppercase text-on-surface-variant">Total Expenses</p>
-                    <p className="text-lg font-bold text-tertiary mt-0.5">{loading ? '—' : fmtShort(totalAssetsExpenses)}</p>
+                    <p className="text-lg font-bold text-tertiary mt-0.5">{loading ? '—' : '-' + fmtShort(totalAssetsExpenses)}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-bold tracking-widest uppercase text-on-surface-variant">Essential Ratio</p>
@@ -441,11 +436,11 @@ export default function Dashboard({ session, onNavigate }) {
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Total Expenses</span>
-                  <p className="text-lg font-bold text-tertiary">{loading ? '—' : fmtShort(totalAssetsExpenses)}</p>
+                  <p className="text-lg font-bold text-tertiary">{loading ? '—' : '-' + fmtShort(totalAssetsExpenses)}</p>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Net Balance</span>
-                  <p className={`text-lg font-bold ${totalAssets >= 0 ? 'text-secondary' : 'text-tertiary'}`}>{loading ? '—' : fmtShort(totalAssets)}</p>
+                  <p className={`text-lg font-bold ${totalAssets >= 0 ? 'text-secondary' : 'text-tertiary'}`}>{loading ? '—' : (totalAssets < 0 ? '-' : '') + fmtShort(totalAssets)}</p>
                 </div>
               </div>
               <button
@@ -459,14 +454,11 @@ export default function Dashboard({ session, onNavigate }) {
           </div>
 
           {/* ── Footer ── */}
-          <footer className="py-8 flex flex-col items-center gap-3 border-t border-outline-variant/20 mt-6">
-            <div className="flex gap-10">
-              <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Terms</a>
-              <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Privacy</a>
-              <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Compliance</a>
-              <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Contact</a>
-            </div>
-            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">© FinanceOS. All rights reserved.</p>
+          <footer className="py-8 flex items-center justify-center border-t border-outline-variant/20 mt-6">
+            <p className="text-[10px] text-on-surface-variant/50 font-medium">
+              Built by Jakob ·{' '}
+              <a href="https://github.com/stadjakobCC" target="_blank" rel="noopener noreferrer" className="hover:text-on-surface-variant transition-colors">GitHub</a>
+            </p>
           </footer>
 
         </div>

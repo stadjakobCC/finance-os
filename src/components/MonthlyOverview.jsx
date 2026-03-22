@@ -49,7 +49,7 @@ function fmtDate(dateStr) {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export default function MonthlyOverview({ session, onNavigate }) {
+export default function MonthlyOverview({ session, onNavigate, darkMode, toggleDark }) {
   const today   = new Date()
   const userId  = session.user.id
   const initial = session.user.email.charAt(0).toUpperCase()
@@ -254,8 +254,10 @@ export default function MonthlyOverview({ session, onNavigate }) {
       {/* ── Sidebar ── */}
       <aside className="fixed left-0 top-0 h-full z-50 flex flex-col p-4 bg-slate-50/70 backdrop-blur-xl w-64 border-r border-slate-200/50">
         <div className="mb-8 px-4 py-2">
-          <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
-          <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
+          <button onClick={() => onNavigate('dashboard')} className="text-left hover:opacity-75 transition-opacity">
+            <h1 className="text-lg font-bold tracking-tighter text-slate-900">FinanceOS</h1>
+            <p className="text-[10px] font-medium tracking-widest text-on-surface-variant uppercase mt-0.5">Premium Member</p>
+          </button>
         </div>
         <nav className="flex-1 space-y-1">
           <a onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 px-4 py-3 text-slate-500 font-sans text-sm font-medium tracking-tight hover:bg-slate-200/50 transition-all cursor-pointer rounded-xl">
@@ -309,11 +311,12 @@ export default function MonthlyOverview({ session, onNavigate }) {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button className="text-on-surface-variant hover:opacity-70 transition-opacity">
-              <span className="material-symbols-outlined">settings</span>
+            <button
+              onClick={toggleDark}
+              className="text-on-surface-variant hover:opacity-70 transition-opacity"
+              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
             </button>
           </div>
         </header>
@@ -671,14 +674,11 @@ export default function MonthlyOverview({ session, onNavigate }) {
         )}
 
         {/* ── Footer ── */}
-        <footer className="py-8 px-8 flex flex-col items-center gap-3 border-t border-outline-variant/20 mt-auto bg-surface">
-          <div className="flex gap-8">
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Terms</a>
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Privacy</a>
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Compliance</a>
-            <a className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors font-semibold" href="#">Contact</a>
-          </div>
-          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">© FinanceOS. All rights reserved.</p>
+        <footer className="py-8 px-8 flex items-center justify-center border-t border-outline-variant/20 mt-auto bg-surface">
+          <p className="text-[10px] text-on-surface-variant/50 font-medium">
+            Built by Jakob ·{' '}
+            <a href="https://github.com/stadjakobCC" target="_blank" rel="noopener noreferrer" className="hover:text-on-surface-variant transition-colors">GitHub</a>
+          </p>
         </footer>
 
       </main>
