@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../supabaseClient'
+import { usePrices } from '../priceContext'
 
 // ── Asset definitions (matches HTML rows exactly) ────────────────────────────
 
@@ -56,84 +57,23 @@ function getLast12Months() {
   return labels
 }
 
-// ── Price fetching ────────────────────────────────────────────────────────────
-
-async function fetchAllPrices() {
-  const result = { bitcoin: null, ethereum: null, solana: null, gold: null, silver: null, usd: null, cash_eur: 1, cash_tr: 1 }
-
-  // 1. CoinGecko for crypto (free, no key, CORS-ok)
-  try {
-    const res = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=eur',
-      { signal: AbortSignal.timeout(8000) }
-    )
-    if (res.ok) {
-      const data = await res.json()
-      result.bitcoin  = data.bitcoin?.eur  ?? null
-      result.ethereum = data.ethereum?.eur ?? null
-      result.solana   = data.solana?.eur   ?? null
-    }
-  } catch (e) { console.warn('[prices] CoinGecko failed:', e.message) }
-
-  // 2. Frankfurter.app for USD/EUR (free, no key, CORS-ok)
-  let usdToEur = null
-  try {
-    const res = await fetch(
-      'https://api.frankfurter.app/latest?from=USD&to=EUR',
-      { signal: AbortSignal.timeout(8000) }
-    )
-    if (res.ok) {
-      const data = await res.json()
-      usdToEur = data.rates?.EUR ?? null
-      result.usd = usdToEur
-      result._usdToEur = usdToEur
-    }
-  } catch (e) { console.warn('[prices] Frankfurter USD failed:', e.message) }
-
-  // 3. gold-api.com for gold/silver in USD → convert to EUR
-  try {
-    const [goldRes, silverRes] = await Promise.all([
-      fetch('https://api.gold-api.com/price/XAU', { signal: AbortSignal.timeout(8000) }),
-      fetch('https://api.gold-api.com/price/XAG', { signal: AbortSignal.timeout(8000) }),
-    ])
-    if (goldRes.ok && silverRes.ok) {
-      const goldData   = await goldRes.json()
-      const silverData = await silverRes.json()
-      const goldUsd   = goldData.price   ?? null
-      const silverUsd = silverData.price ?? null
-      console.log('[prices] gold-api.com — XAU:', goldUsd, 'USD, XAG:', silverUsd, 'USD')
-      if (usdToEur) {
-        result.gold   = goldUsd   !== null ? goldUsd   * usdToEur : null
-        result.silver = silverUsd !== null ? silverUsd * usdToEur : null
-      }
-      result._goldUsd   = goldUsd
-      result._silverUsd = silverUsd
-    }
-  } catch (e) { console.warn('[prices] gold-api.com failed:', e.message) }
-
-  return result
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Portfolio({ session, onNavigate, darkMode, toggleDark }) {
   const userId  = session.user.id
   const initial = session.user.email.charAt(0).toUpperCase()
 
-  const [prices,        setPrices]        = useState({ bitcoin: null, ethereum: null, solana: null, gold: null, silver: null, usd: null, cash_eur: 1, cash_tr: 1 })
-  const [pricesLoading, setPricesLoading] = useState(true)
-  const [holdings,      setHoldings]      = useState([])
-  const [filter,        setFilter]        = useState('all') // 'all' | 'commodities' | 'digital'
-  const [showForm,      setShowForm]      = useState(false)
-  const [formAsset,     setFormAsset]     = useState('bitcoin')
-  const [formQty,       setFormQty]       = useState('')
-  const [formPrice,     setFormPrice]     = useState('')
-  const [formStatus,    setFormStatus]    = useState(null) // null | 'loading' | 'success' | 'error'
-  const [rowCurrency,   setRowCurrency]   = useState({})
+  const { prices, loading: pricesLoading } = usePrices()
+  const [holdings,    setHoldings]    = useState([])
+  const [filter,      setFilter]      = useState('all') // 'all' | 'commodities' | 'digital'
+  const [showForm,    setShowForm]    = useState(false)
+  const [formAsset,   setFormAsset]   = useState('bitcoin')
+  const [formQty,     setFormQty]     = useState('')
+  const [formPrice,   setFormPrice]   = useState('')
+  const [formStatus,  setFormStatus]  = useState(null) // null | 'loading' | 'success' | 'error'
+  const [rowCurrency, setRowCurrency] = useState({})
 
-  // Load prices and holdings in parallel
   useEffect(() => {
-    fetchAllPrices().then(p => { setPrices(p); setPricesLoading(false) })
     loadHoldings()
   }, []) // eslint-disable-line
 

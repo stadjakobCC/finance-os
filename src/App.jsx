@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
+import { PriceProvider } from './priceContext'
 import Auth from './components/Auth'
 import Dashboard from './components/Dashboard'
 import MonthlyOverview from './components/MonthlyOverview'
@@ -39,10 +40,14 @@ function App() {
 
   const pageProps = { session, onNavigate: setPage, darkMode, toggleDark }
 
-  if (page === 'monthly')   return <MonthlyOverview {...pageProps} />
-  if (page === 'portfolio') return <Portfolio        {...pageProps} />
-  if (page === 'savings')   return <SavingsGoals    {...pageProps} />
-  return                           <Dashboard        {...pageProps} />
+  return (
+    <PriceProvider>
+      {page === 'monthly'   ? <MonthlyOverview {...pageProps} /> :
+       page === 'portfolio' ? <Portfolio        {...pageProps} /> :
+       page === 'savings'   ? <SavingsGoals    {...pageProps} /> :
+                              <Dashboard        {...pageProps} />}
+    </PriceProvider>
+  )
 }
 
 export default App

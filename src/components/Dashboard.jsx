@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../supabaseClient'
+import { usePrices } from '../priceContext'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -44,6 +45,8 @@ function fmtTxDate(dateStr) {
   return `${MONTH_NAMES[parseInt(m) - 1].slice(0, 3).toUpperCase()} ${parseInt(d)}`
 }
 
+const ASSET_IDS = ['gold', 'silver', 'bitcoin', 'ethereum', 'solana', 'usd', 'cash_eur', 'cash_tr']
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function Dashboard({ session, onNavigate, darkMode, toggleDark }) {
@@ -51,9 +54,14 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
   const userId = session.user.id
   const initial = session.user.email.charAt(0).toUpperCase()
 
-  const [allExpenses, setAllExpenses] = useState([])
-  const [allIncome,   setAllIncome]   = useState([])
-  const [loading,     setLoading]     = useState(true)
+  const [allExpenses,     setAllExpenses]     = useState([])
+  const [allIncome,       setAllIncome]       = useState([])
+  const [loading,         setLoading]         = useState(true)
+  const [holdings,        setHoldings]        = useState([])
+  const [holdingsLoading, setHoldingsLoading] = useState(true)
+
+  const { prices, loading: pricesLoading } = usePrices()
+  const portfolioLoading = holdingsLoading || pricesLoading
 
   useEffect(() => {
     async function load() {
@@ -69,10 +77,28 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
     load()
   }, [userId])
 
+  useEffect(() => {
+    supabase.from('holdings').select('*').eq('user_id', userId).then(({ data }) => {
+      if (data) setHoldings(data)
+      setHoldingsLoading(false)
+    })
+  }, [userId])
+
   // ── Total Assets ────────────────────────────────────────────────────────
   const totalAssetsIncome   = useMemo(() => allIncome.reduce((s, r) => s + r.amount, 0), [allIncome])
   const totalAssetsExpenses = useMemo(() => allExpenses.reduce((s, r) => s + r.amount, 0), [allExpenses])
-  const totalAssets         = totalAssetsIncome - totalAssetsExpenses
+
+  const portfolioValue = useMemo(() => {
+    const holdingMap = Object.fromEntries(holdings.map(h => [h.asset_id, h]))
+    return ASSET_IDS.reduce((sum, id) => {
+      const h = holdingMap[id]
+      const p = prices[id]
+      if (!h || !p) return sum
+      return sum + h.quantity * p
+    }, 0)
+  }, [holdings, prices])
+
+  const totalAssets = totalAssetsIncome - totalAssetsExpenses + portfolioValue
 
   // ── Last 5 transactions ──────────────────────────────────────────────────
   const recentTx = useMemo(() => {
@@ -232,7 +258,7 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
                 <span className="text-[11px] font-bold tracking-[0.2em] text-on-surface-variant uppercase">Current Net Balance</span>
                 <div className="flex items-baseline gap-4">
                   <h2 className={`text-7xl font-extrabold tracking-tighter ${totalAssets < 0 ? 'text-tertiary' : 'text-on-surface'}`}>
-                    {loading ? '—' : (totalAssets < 0 ? '-' : '') + fmt(totalAssets)}
+                    {loading || portfolioLoading ? '—' : (totalAssets < 0 ? '-' : '') + fmt(totalAssets)}
                   </h2>
                 </div>
                 <div className="flex gap-10 mt-4">
@@ -245,8 +271,8 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
                     <p className="text-lg font-bold text-tertiary mt-0.5">{loading ? '—' : '-' + fmtShort(totalAssetsExpenses)}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold tracking-widest uppercase text-on-surface-variant">Essential Ratio</p>
-                    <p className="text-lg font-bold text-primary mt-0.5">{totalAssetsExpenses > 0 ? `${essentialPct}%` : '—'}</p>
+                    <p className="text-[10px] font-bold tracking-widest uppercase text-on-surface-variant">Portfolio</p>
+                    <p className="text-lg font-bold text-primary mt-0.5">{portfolioLoading ? '—' : fmtShort(portfolioValue)}</p>
                   </div>
                 </div>
               </div>
@@ -440,7 +466,7 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Net Balance</span>
-                  <p className={`text-lg font-bold ${totalAssets >= 0 ? 'text-secondary' : 'text-tertiary'}`}>{loading ? '—' : (totalAssets < 0 ? '-' : '') + fmtShort(totalAssets)}</p>
+                  <p className={`text-lg font-bold ${totalAssets >= 0 ? 'text-secondary' : 'text-tertiary'}`}>{loading || portfolioLoading ? '—' : (totalAssets < 0 ? '-' : '') + fmtShort(totalAssets)}</p>
                 </div>
               </div>
               <button
