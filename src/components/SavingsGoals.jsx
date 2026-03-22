@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../supabaseClient'
 
+const MAX_AMOUNT  = 999_999_999
+const MAX_NAME    = 100
+
 export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark }) {
   const userId  = session.user.id
   const initial = session.user.email.charAt(0).toUpperCase()
@@ -14,11 +17,13 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
   const [formTarget,  setFormTarget]  = useState('')
   const [formCurrent, setFormCurrent] = useState('')
   const [formStatus,  setFormStatus]  = useState(null) // null | 'loading' | 'success' | 'error'
+  const [formError,   setFormError]   = useState(null)
 
   // Add money
   const [addMoneyId,  setAddMoneyId]  = useState(null)
   const [addAmount,   setAddAmount]   = useState('')
   const [addStatus,   setAddStatus]   = useState(null)
+  const [addError,    setAddError]    = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => { loadGoals() }, []) // eslint-disable-line
@@ -29,53 +34,63 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
-    if (error) console.error('[goals] fetch error:', error)
+    if (error) console.error('[goals] fetch error:', error.code)
     else setGoals(data || [])
     setLoading(false)
   }
 
   async function handleCreateGoal(e) {
     e.preventDefault()
+    setFormError(null)
+    const name = formName.trim().slice(0, MAX_NAME)
+    if (!name) { setFormError('Goal name is required.'); return }
+    const target = parseFloat(formTarget)
+    if (!Number.isFinite(target) || target <= 0) { setFormError('Target must be a positive number.'); return }
+    if (target > MAX_AMOUNT) { setFormError('Target amount is too large.'); return }
+    const current = parseFloat(formCurrent) || 0
+    if (current < 0) { setFormError('Current amount cannot be negative.'); return }
+    if (current > target) { setFormError('Current amount cannot exceed target.'); return }
     setFormStatus('loading')
     const { error } = await supabase
       .from('savings')
-      .insert({
-        user_id:        userId,
-        name:           formName,
-        target_amount:  parseFloat(formTarget),
-        current_amount: parseFloat(formCurrent) || 0,
-      })
+      .insert({ user_id: userId, name, target_amount: target, current_amount: current })
     if (error) {
-      console.error('[goals] create error:', error)
+      console.error('[goals] create error:', error.code)
       setFormStatus('error')
+      setFormError('Could not create goal. Please try again.')
       setTimeout(() => setFormStatus(null), 3000)
     } else {
       setFormStatus('success')
       setFormName(''); setFormTarget(''); setFormCurrent('')
       loadGoals()
-      setTimeout(() => { setFormStatus(null); setShowForm(false) }, 1500)
+      setTimeout(() => { setFormStatus(null); setFormError(null); setShowForm(false) }, 1500)
     }
   }
 
   async function handleAddMoney(e, goalId) {
     e.preventDefault()
-    setAddStatus('loading')
+    setAddError(null)
+    const amount = parseFloat(addAmount)
+    if (!Number.isFinite(amount) || amount <= 0) { setAddError('Enter a valid positive amount.'); return }
+    if (amount > MAX_AMOUNT) { setAddError('Amount is too large.'); return }
     const goal = goals.find(g => g.id === goalId)
-    const newAmount = goal.current_amount + parseFloat(addAmount)
+    const newAmount = goal.current_amount + amount
+    setAddStatus('loading')
     const { error } = await supabase
       .from('savings')
       .update({ current_amount: newAmount })
       .eq('id', goalId)
       .eq('user_id', userId)
     if (error) {
-      console.error('[goals] add money error:', error)
+      console.error('[goals] add money error:', error.code)
       setAddStatus('error')
+      setAddError('Could not update goal. Please try again.')
       setTimeout(() => setAddStatus(null), 3000)
     } else {
       setAddStatus('success')
       setAddAmount('')
       loadGoals()
-      setTimeout(() => { setAddStatus(null); setAddMoneyId(null) }, 1200)
+      setTimeout(() => { setAddStatus(null); setAddError(null); setAddMoneyId(null) }, 1200)
     }
   }
 
@@ -85,7 +100,7 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
       .delete()
       .eq('id', goalId)
       .eq('user_id', userId)
-    if (error) console.error('[goals] delete error:', error)
+    if (error) console.error('[goals] delete error:', error.code)
     else setGoals(prev => prev.filter(g => g.id !== goalId))
   }
 
@@ -213,6 +228,7 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
                     placeholder="e.g. Emergency Fund"
                     value={formName}
                     onChange={e => setFormName(e.target.value)}
+                    maxLength={MAX_NAME}
                     required
                   />
                 </div>
@@ -237,21 +253,24 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
                     onChange={e => setFormCurrent(e.target.value)}
                   />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-col">
+                  {formError && <p className="text-xs text-tertiary font-medium">{formError}</p>}
+                  <div className="flex gap-3">
                   <button
                     type="submit"
                     disabled={formStatus === 'loading'}
                     className="flex-1 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
                   >
-                    {formStatus === 'loading' ? '...' : formStatus === 'success' ? '✓ Created' : formStatus === 'error' ? 'Error' : 'Create'}
+                    {formStatus === 'loading' ? '...' : formStatus === 'success' ? '✓ Created' : 'Create'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowForm(false)}
+                    onClick={() => { setShowForm(false); setFormError(null) }}
                     className="px-4 py-3 text-on-surface-variant border border-outline-variant/30 rounded-xl hover:bg-surface-container transition-colors text-sm font-semibold"
                   >
                     Cancel
                   </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -306,26 +325,29 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
 
                     {/* Add money inline form */}
                     {addMoneyId === mainGoal.id && (
-                      <form onSubmit={e => handleAddMoney(e, mainGoal.id)} className="flex gap-3 mb-8 items-end">
-                        <div className="flex-1 space-y-1.5">
-                          <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Amount to Add (€)</label>
-                          <input
-                            type="number" min="0" step="any" autoFocus
-                            className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
-                            placeholder="0.00"
-                            value={addAmount}
-                            onChange={e => setAddAmount(e.target.value)}
-                            required
-                          />
+                      <form onSubmit={e => handleAddMoney(e, mainGoal.id)} className="flex flex-col gap-2 mb-8">
+                        <div className="flex gap-3 items-end">
+                          <div className="flex-1 space-y-1.5">
+                            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Amount to Add (€)</label>
+                            <input
+                              type="number" min="0" step="any" autoFocus
+                              className="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/30"
+                              placeholder="0.00"
+                              value={addAmount}
+                              onChange={e => { setAddAmount(e.target.value); setAddError(null) }}
+                              required
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={addStatus === 'loading'}
+                            className="px-6 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
+                          >
+                            {addStatus === 'loading' ? '...' : addStatus === 'success' ? '✓' : 'Save'}
+                          </button>
+                          <button type="button" onClick={() => { setAddMoneyId(null); setAddError(null) }} className="px-4 py-3 text-on-surface-variant border border-outline-variant/20 rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors">×</button>
                         </div>
-                        <button
-                          type="submit"
-                          disabled={addStatus === 'loading'}
-                          className="px-6 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
-                        >
-                          {addStatus === 'loading' ? '...' : addStatus === 'success' ? '✓' : 'Save'}
-                        </button>
-                        <button type="button" onClick={() => setAddMoneyId(null)} className="px-4 py-3 text-on-surface-variant border border-outline-variant/20 rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors">×</button>
+                        {addError && <p className="text-xs text-tertiary font-medium px-1">{addError}</p>}
                       </form>
                     )}
 
@@ -471,21 +493,24 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
                   </div>
 
                   {addMoneyId === goal.id && (
-                    <form onSubmit={e => handleAddMoney(e, goal.id)} className="flex gap-2 mb-4 items-end">
-                      <div className="flex-1 space-y-1">
-                        <input
-                          type="number" min="0" step="any" autoFocus
-                          className="w-full bg-surface-container-lowest border-none rounded-xl py-2.5 px-3 text-sm focus:ring-1 focus:ring-primary/20"
-                          placeholder="Amount (€)"
-                          value={addAmount}
-                          onChange={e => setAddAmount(e.target.value)}
-                          required
-                        />
+                    <form onSubmit={e => handleAddMoney(e, goal.id)} className="flex flex-col gap-1 mb-4">
+                      <div className="flex gap-2 items-end">
+                        <div className="flex-1 space-y-1">
+                          <input
+                            type="number" min="0" step="any" autoFocus
+                            className="w-full bg-surface-container-lowest border-none rounded-xl py-2.5 px-3 text-sm focus:ring-1 focus:ring-primary/20"
+                            placeholder="Amount (€)"
+                            value={addAmount}
+                            onChange={e => { setAddAmount(e.target.value); setAddError(null) }}
+                            required
+                          />
+                        </div>
+                        <button type="submit" disabled={addStatus === 'loading'} className="px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-xs disabled:opacity-50">
+                          {addStatus === 'success' ? '✓' : 'Save'}
+                        </button>
+                        <button type="button" onClick={() => { setAddMoneyId(null); setAddError(null) }} className="px-2.5 py-2.5 text-on-surface-variant border border-outline-variant/20 rounded-xl text-xs">×</button>
                       </div>
-                      <button type="submit" disabled={addStatus === 'loading'} className="px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-xs disabled:opacity-50">
-                        {addStatus === 'success' ? '✓' : 'Save'}
-                      </button>
-                      <button type="button" onClick={() => setAddMoneyId(null)} className="px-2.5 py-2.5 text-on-surface-variant border border-outline-variant/20 rounded-xl text-xs">×</button>
+                      {addError && <p className="text-xs text-tertiary font-medium px-1">{addError}</p>}
                     </form>
                   )}
 

@@ -16,6 +16,10 @@ const EXPENSE_CATEGORIES = [
 
 const INCOME_CATEGORIES = ['Salary', 'Pocket Money', 'Gifts', 'Side Income']
 
+const EXPENSE_TYPES = ['Essential', 'Useless']
+const MAX_AMOUNT = 999_999_999
+const MAX_DESC   = 200
+
 const SHORT_CAT = {
   'Food & Beverages':  'Food',
   'Going Out & Party': 'Going Out',
@@ -79,6 +83,8 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
 
   const [expStatus, setExpStatus] = useState(null)
   const [incStatus, setIncStatus] = useState(null)
+  const [expError,  setExpError]  = useState(null)
+  const [incError,  setIncError]  = useState(null)
   const [modal,     setModal]     = useState(null) // 'income' | 'expense' | null
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -99,7 +105,6 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
   }
 
   async function fetchExpenses() {
-    console.log('[fetchExpenses] querying expenses for user_id:', userId, 'range:', monthStart, '→', monthEnd)
     const [{ data: monthData, error: e1 }, { data: recurringData, error: e2 }] = await Promise.all([
       supabase.from('expenses').select('*').eq('user_id', userId)
         .gte('date', monthStart).lte('date', monthEnd)
@@ -108,25 +113,23 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
         .eq('recurring', true).lt('date', monthStart)
         .order('date', { ascending: false }),
     ])
-    if (e1) console.error('[fetchExpenses] month query error:', e1)
-    if (e2) console.error('[fetchExpenses] recurring query error:', e2)
+    if (e1) console.error('[fetchExpenses] month query error:', e1.code)
+    if (e2) console.error('[fetchExpenses] recurring query error:', e2.code)
     if (monthData) {
       const seen = new Set(monthData.map(r => r.id))
       const extra = (recurringData || []).filter(r => !seen.has(r.id))
       const merged = [...monthData, ...extra].sort((a, b) => b.date.localeCompare(a.date))
-      console.log('[fetchExpenses] rows returned:', merged.length)
       setExpenses(merged)
     }
   }
 
   async function fetchIncome() {
-    console.log('[fetchIncome] querying income for user_id:', userId, 'range:', monthStart, '→', monthEnd)
     const { data, error } = await supabase
       .from('income').select('*').eq('user_id', userId)
       .gte('date', monthStart).lte('date', monthEnd)
       .order('date', { ascending: false })
-    if (error) console.error('[fetchIncome] error:', error)
-    else { console.log('[fetchIncome] rows returned:', data.length); setIncome(data) }
+    if (error) console.error('[fetchIncome]', error.code)
+    else setIncome(data)
   }
 
   async function loadDescriptions() {
@@ -134,66 +137,64 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
       supabase.from('expenses').select('description').eq('user_id', userId).not('description', 'is', null),
       supabase.from('income').select('description').eq('user_id', userId).not('description', 'is', null),
     ])
-    if (e1) console.error('[loadDescriptions] expenses error:', e1)
-    if (e2) console.error('[loadDescriptions] income error:', e2)
+    if (e1) console.error('[loadDescriptions] expenses error:', e1.code)
+    if (e2) console.error('[loadDescriptions] income error:', e2.code)
     if (expData) setPastExpDescs([...new Set(expData.map(r => r.description).filter(Boolean))])
     if (incData) setPastIncDescs([...new Set(incData.map(r => r.description).filter(Boolean))])
   }
 
   async function handleAddExpense(e) {
     e.preventDefault()
+    setExpError(null)
+    const amount = parseFloat(expForm.amount)
+    if (!Number.isFinite(amount) || amount <= 0)  { setExpError('Enter a valid positive amount.'); return }
+    if (amount > MAX_AMOUNT)                       { setExpError('Amount exceeds maximum allowed.'); return }
+    if (!EXPENSE_CATEGORIES.includes(expForm.category)) { setExpError('Invalid category.'); return }
+    if (!EXPENSE_TYPES.includes(expForm.type))     { setExpError('Invalid type.'); return }
+    const description = expForm.description.trim().slice(0, MAX_DESC) || null
     setExpStatus('loading')
-    const payload = {
-      user_id:     userId,
-      amount:      parseFloat(expForm.amount),
-      category:    expForm.category,
-      type:        expForm.type,
-      recurring:   expForm.recurring,
-      date:        expForm.date,
-      description: expForm.description || null,
-    }
-    console.log('[handleAddExpense] inserting:', payload)
-    const { error } = await supabase.from('expenses').insert(payload)
+    const { error } = await supabase.from('expenses').insert({
+      user_id: userId, amount, category: expForm.category, type: expForm.type,
+      recurring: expForm.recurring, date: expForm.date, description,
+    })
     if (error) {
-      console.error('[handleAddExpense] error:', error)
-      console.error('[handleAddExpense] error details:', error.details, '| hint:', error.hint, '| code:', error.code)
+      console.error('[handleAddExpense]', error.code)
       setExpStatus('error')
+      setExpError('Could not save expense. Please try again.')
       setTimeout(() => setExpStatus(null), 3000)
     } else {
-      console.log('[handleAddExpense] success')
       setExpStatus('success')
       setExpForm(f => ({ ...f, amount: '', recurring: false, description: '' }))
       fetchExpenses()
       loadDescriptions()
-      setTimeout(() => { setExpStatus(null); setModal(null) }, 1200)
+      setTimeout(() => { setExpStatus(null); setExpError(null); setModal(null) }, 1200)
     }
   }
 
   async function handleAddIncome(e) {
     e.preventDefault()
+    setIncError(null)
+    const amount = parseFloat(incForm.amount)
+    if (!Number.isFinite(amount) || amount <= 0)  { setIncError('Enter a valid positive amount.'); return }
+    if (amount > MAX_AMOUNT)                       { setIncError('Amount exceeds maximum allowed.'); return }
+    if (!INCOME_CATEGORIES.includes(incForm.category)) { setIncError('Invalid category.'); return }
+    const description = incForm.description.trim().slice(0, MAX_DESC) || null
     setIncStatus('loading')
-    const payload = {
-      user_id:     userId,
-      amount:      parseFloat(incForm.amount),
-      category:    incForm.category,
-      recurring:   incForm.recurring,
-      date:        incForm.date,
-      description: incForm.description || null,
-    }
-    console.log('[handleAddIncome] inserting:', payload)
-    const { error } = await supabase.from('income').insert(payload)
+    const { error } = await supabase.from('income').insert({
+      user_id: userId, amount, category: incForm.category,
+      recurring: incForm.recurring, date: incForm.date, description,
+    })
     if (error) {
-      console.error('[handleAddIncome] error:', error)
-      console.error('[handleAddIncome] error details:', error.details, '| hint:', error.hint, '| code:', error.code)
+      console.error('[handleAddIncome]', error.code)
       setIncStatus('error')
+      setIncError('Could not save income. Please try again.')
       setTimeout(() => setIncStatus(null), 3000)
     } else {
-      console.log('[handleAddIncome] success')
       setIncStatus('success')
       setIncForm(f => ({ ...f, amount: '', description: '' }))
       fetchIncome()
       loadDescriptions()
-      setTimeout(() => { setIncStatus(null); setModal(null) }, 1200)
+      setTimeout(() => { setIncStatus(null); setIncError(null); setModal(null) }, 1200)
     }
   }
 
@@ -201,7 +202,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
     const table = tx.kind === 'expense' ? 'expenses' : 'income'
     const { error } = await supabase.from(table).delete().eq('id', tx.id).eq('user_id', userId)
     if (error) {
-      console.error('[handleDelete] error:', error)
+      console.error('[handleDelete] error:', error.code)
     } else {
       if (tx.kind === 'expense') setExpenses(prev => prev.filter(e => e.id !== tx.id))
       else setIncome(prev => prev.filter(i => i.id !== tx.id))
@@ -597,7 +598,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
                     <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Description</label>
                     <input
                       className="w-full bg-surface-container-low border-none rounded-xl py-3 px-5 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/20"
-                      placeholder="Source details..." type="text"
+                      placeholder="Source details..." type="text" maxLength={MAX_DESC}
                       value={incForm.description}
                       onChange={e => setIncForm(f => ({ ...f, description: e.target.value }))}
                       list="inc-desc-list" autoComplete="off"
@@ -606,11 +607,12 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
                       {pastIncDescs.map(d => <option key={d} value={d} />)}
                     </datalist>
                   </div>
+                  {incError && <p className="text-xs text-tertiary font-medium px-1">{incError}</p>}
                   <button
                     className="w-full bg-secondary text-on-secondary py-4 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-all mt-2 disabled:opacity-50"
                     type="submit" disabled={incStatus === 'loading'}
                   >
-                    {incStatus === 'loading' ? 'Processing...' : incStatus === 'success' ? '✓ Income Recorded' : incStatus === 'error' ? 'Error — Try Again' : 'Record Income'}
+                    {incStatus === 'loading' ? 'Processing...' : incStatus === 'success' ? '✓ Income Recorded' : 'Record Income'}
                   </button>
                 </form>
               ) : (
@@ -664,7 +666,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
                     <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-1">Description</label>
                     <input
                       className="w-full bg-surface-container-low border-none rounded-xl py-3 px-5 text-sm focus:ring-1 focus:ring-primary/20 placeholder:text-on-surface-variant/20"
-                      placeholder="Transaction details..." type="text"
+                      placeholder="Transaction details..." type="text" maxLength={MAX_DESC}
                       value={expForm.description}
                       onChange={e => setExpForm(f => ({ ...f, description: e.target.value }))}
                       list="exp-desc-list" autoComplete="off"
@@ -673,11 +675,12 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
                       {pastExpDescs.map(d => <option key={d} value={d} />)}
                     </datalist>
                   </div>
+                  {expError && <p className="text-xs text-tertiary font-medium px-1">{expError}</p>}
                   <button
                     className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-all mt-2 disabled:opacity-50"
                     type="submit" disabled={expStatus === 'loading'}
                   >
-                    {expStatus === 'loading' ? 'Processing...' : expStatus === 'success' ? '✓ Expense Recorded' : expStatus === 'error' ? 'Error — Try Again' : 'Record Expense'}
+                    {expStatus === 'loading' ? 'Processing...' : expStatus === 'success' ? '✓ Expense Recorded' : 'Record Expense'}
                   </button>
                 </form>
               )}

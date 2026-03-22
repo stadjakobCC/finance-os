@@ -71,6 +71,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
   const [formQty,     setFormQty]     = useState('')
   const [formPrice,   setFormPrice]   = useState('')
   const [formStatus,  setFormStatus]  = useState(null) // null | 'loading' | 'success' | 'error'
+  const [formError,   setFormError]   = useState(null)
   const [rowCurrency, setRowCurrency] = useState({})
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -81,7 +82,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
   async function loadHoldings() {
     const { data, error } = await supabase
       .from('holdings').select('*').eq('user_id', userId)
-    if (error) console.error('[holdings] fetch error:', error)
+    if (error) console.error('[holdings] fetch error:', error.code)
     else setHoldings(data || [])
   }
 
@@ -123,30 +124,39 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
     setFormAsset(assetId)
     setFormQty(h ? String(h.quantity) : '')
     setFormPrice(h ? String(h.purchase_price) : '')
+    setFormError(null)
     setShowForm(true)
   }
 
+  const MAX_HOLDING = 999_999_999
+
   async function handleSaveHolding(e) {
     e.preventDefault()
-    setFormStatus('loading')
-    const payload = {
-      user_id:        userId,
-      asset_id:       formAsset,
-      quantity:       parseFloat(formQty),
-      purchase_price: ['cash_eur', 'cash_tr'].includes(formAsset) ? 1 : parseFloat(formPrice),
+    setFormError(null)
+    const validAssetIds = ASSETS.map(a => a.id)
+    if (!validAssetIds.includes(formAsset)) { setFormError('Invalid asset selected.'); return }
+    const qty = parseFloat(formQty)
+    if (!Number.isFinite(qty) || qty <= 0) { setFormError('Quantity must be a positive number.'); return }
+    if (qty > MAX_HOLDING) { setFormError('Quantity is too large.'); return }
+    const isCash = ['cash_eur', 'cash_tr'].includes(formAsset)
+    const purchasePrice = isCash ? 1 : parseFloat(formPrice)
+    if (!isCash) {
+      if (!Number.isFinite(purchasePrice) || purchasePrice <= 0) { setFormError('Purchase price must be a positive number.'); return }
+      if (purchasePrice > MAX_HOLDING) { setFormError('Purchase price is too large.'); return }
     }
-    console.log('[holdings] upsert:', payload)
+    setFormStatus('loading')
     const { error } = await supabase
       .from('holdings')
-      .upsert(payload, { onConflict: 'user_id,asset_id' })
+      .upsert({ user_id: userId, asset_id: formAsset, quantity: qty, purchase_price: purchasePrice }, { onConflict: 'user_id,asset_id' })
     if (error) {
-      console.error('[holdings] upsert error:', error)
+      console.error('[holdings] upsert error:', error.code)
       setFormStatus('error')
+      setFormError('Could not save holding. Please try again.')
       setTimeout(() => setFormStatus(null), 3000)
     } else {
       setFormStatus('success')
       loadHoldings()
-      setTimeout(() => { setFormStatus(null); setShowForm(false) }, 1500)
+      setTimeout(() => { setFormStatus(null); setFormError(null); setShowForm(false) }, 1500)
     }
   }
 
@@ -156,7 +166,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
       .delete()
       .eq('user_id', userId)
       .eq('asset_id', assetId)
-    if (error) console.error('[holdings] delete error:', error)
+    if (error) console.error('[holdings] delete error:', error.code)
     else setHoldings(prev => prev.filter(h => h.asset_id !== assetId))
   }
 
@@ -399,16 +409,17 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
                       disabled={formStatus === 'loading'}
                       className="flex-1 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
                     >
-                      {formStatus === 'loading' ? '...' : formStatus === 'success' ? '✓ Saved' : formStatus === 'error' ? 'Error' : 'Save'}
+                      {formStatus === 'loading' ? '...' : formStatus === 'success' ? '✓ Saved' : 'Save'}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowForm(false)}
+                      onClick={() => { setShowForm(false); setFormError(null) }}
                       className="px-4 py-3 text-on-surface-variant border border-outline-variant/30 rounded-xl hover:bg-surface-container transition-colors text-sm font-semibold"
                     >
                       Cancel
                     </button>
                   </div>
+                  {formError && <p className="text-xs text-tertiary font-medium px-1 mt-1">{formError}</p>}
                 </form>
               </div>
             )}
