@@ -30,8 +30,12 @@ function App() {
 
   if (session === undefined) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="font-sans uppercase tracking-widest text-[10px] text-on-surface-variant/40">Loading...</p>
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center gap-5">
+        <div className="text-center">
+          <h1 className="text-2xl font-extrabold tracking-tighter text-on-surface">FinanceOS</h1>
+          <p className="text-[10px] font-bold tracking-widest uppercase text-on-surface-variant mt-1">Premium Member</p>
+        </div>
+        <div className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
       </div>
     )
   }
@@ -42,10 +46,12 @@ function App() {
 
   return (
     <PriceProvider>
-      {page === 'monthly'   ? <MonthlyOverview {...pageProps} /> :
-       page === 'portfolio' ? <Portfolio        {...pageProps} /> :
-       page === 'savings'   ? <SavingsGoals    {...pageProps} /> :
-                              <Dashboard        {...pageProps} />}
+      <div key={page} className="page-fade">
+        {page === 'monthly'   ? <MonthlyOverview {...pageProps} /> :
+         page === 'portfolio' ? <Portfolio        {...pageProps} /> :
+         page === 'savings'   ? <SavingsGoals    {...pageProps} /> :
+                                <Dashboard        {...pageProps} />}
+      </div>
     </PriceProvider>
   )
 }

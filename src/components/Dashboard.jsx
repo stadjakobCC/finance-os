@@ -29,20 +29,20 @@ const CAT_ICONS = {
 }
 
 function fmt(amount) {
-  return '€ ' + Math.abs(amount).toLocaleString('en-US', {
+  return '€' + Math.abs(amount).toLocaleString('en-US', {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   })
 }
 
 function fmtShort(amount) {
-  return '€ ' + Math.abs(amount).toLocaleString('en-US', {
+  return '€' + Math.abs(amount).toLocaleString('en-US', {
     minimumFractionDigits: 0, maximumFractionDigits: 0,
   })
 }
 
 function fmtTxDate(dateStr) {
-  const [, m, d] = dateStr.split('-')
-  return `${MONTH_NAMES[parseInt(m) - 1].slice(0, 3).toUpperCase()} ${parseInt(d)}`
+  const [y, m, d] = dateStr.split('-')
+  return `${MONTH_NAMES[parseInt(m) - 1].slice(0, 3)} ${parseInt(d)}, ${y}`
 }
 
 const ASSET_IDS = ['gold', 'silver', 'bitcoin', 'ethereum', 'solana', 'usd', 'cash_eur', 'cash_tr']
@@ -249,7 +249,7 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-auto">
             <button
               onClick={toggleDark}
               className="text-on-surface-variant hover:opacity-70 transition-opacity"
@@ -347,7 +347,7 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
                     <Tooltip
                       contentStyle={{ background: '#ffffff', border: '1px solid #c1c6d7', borderRadius: '12px', fontFamily: 'Inter', fontSize: 11 }}
                       labelStyle={{ color: '#1a1b1f', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}
-                      formatter={(val, name) => [`€ ${val.toLocaleString()}`, name]}
+                      formatter={(val, name) => [`€${val.toLocaleString()}`, name]}
                     />
                     <Line type="monotone" dataKey="This Month" stroke="#0058bc" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="Last Month"  stroke="#c1c6d7" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
@@ -414,9 +414,15 @@ export default function Dashboard({ session, onNavigate, darkMode, toggleDark })
               </div>
 
               {loading ? (
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">Loading...</p>
+                <div className="flex justify-center py-10">
+                  <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                </div>
               ) : recentTx.length === 0 ? (
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">No transactions yet.</p>
+                <div className="flex flex-col items-center py-10 gap-3 text-center">
+                  <span className="material-symbols-outlined text-on-surface-variant/30" style={{ fontSize: '40px' }}>receipt_long</span>
+                  <p className="text-sm font-bold text-on-surface-variant">No transactions yet</p>
+                  <p className="text-xs text-on-surface-variant/60">Add income or expenses in the Monthly Overview</p>
+                </div>
               ) : (
                 <div className="space-y-1">
                   {recentTx.map(tx => (

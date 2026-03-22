@@ -115,6 +115,15 @@ main {
     color: #414755;
 }
 
+/* ── Page fade-in transition ── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-fade {
+  animation: pageFadeIn 0.2s ease-out;
+}
+
 .glass-panel {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);

@@ -106,7 +106,7 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function fmtEur(n) {
-    return '€ ' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return '€' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
   function pctOf(goal) {
@@ -186,7 +186,7 @@ export default function SavingsGoals({ session, onNavigate, darkMode, toggleDark
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-auto">
             <button
               onClick={toggleDark}
               className="text-on-surface-variant hover:opacity-70 transition-opacity"

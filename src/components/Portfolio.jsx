@@ -19,12 +19,12 @@ const ASSETS = [
 
 function fmtEur(n, decimals = 2) {
   if (n === null || n === undefined) return 'N/A'
-  return '€ ' + n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+  return '€' + n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 }
 
 function fmtUsd(n, decimals = 2) {
   if (n === null || n === undefined) return 'N/A'
-  return '$ ' + n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 }
 
 function fmtMoney(n, currency, decimals = 2) {
@@ -239,7 +239,7 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-auto">
             <button
               onClick={toggleDark}
               className="text-on-surface-variant hover:opacity-70 transition-opacity"
@@ -421,6 +421,14 @@ export default function Portfolio({ session, onNavigate, darkMode, toggleDark })
                   </div>
                   {formError && <p className="text-xs text-tertiary font-medium px-1 mt-1">{formError}</p>}
                 </form>
+              </div>
+            )}
+
+            {/* No-holdings hint */}
+            {holdings.length === 0 && !pricesLoading && (
+              <div className="flex items-center gap-3 px-5 py-4 bg-primary/5 border border-primary/10 rounded-2xl">
+                <span className="material-symbols-outlined text-primary shrink-0">info</span>
+                <p className="text-sm text-on-surface-variant">No holdings recorded yet — click <strong>Edit</strong> on any asset below to add your first position.</p>
               </div>
             )}
 

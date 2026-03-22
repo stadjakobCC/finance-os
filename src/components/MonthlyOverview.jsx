@@ -41,14 +41,14 @@ const MONTH_NAMES = [
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(amount) {
-  return '€ ' + Math.abs(amount).toLocaleString('en-US', {
+  return '€' + Math.abs(amount).toLocaleString('en-US', {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   })
 }
 
 function fmtDate(dateStr) {
-  const [, m, d] = dateStr.split('-')
-  return `${MONTH_NAMES[parseInt(m) - 1].slice(0, 3)} ${parseInt(d)}`
+  const [y, m, d] = dateStr.split('-')
+  return `${MONTH_NAMES[parseInt(m) - 1].slice(0, 3)} ${parseInt(d)}, ${y}`
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -323,7 +323,7 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-auto">
             <button
               onClick={toggleDark}
               className="text-on-surface-variant hover:opacity-70 transition-opacity"
@@ -421,11 +421,15 @@ export default function MonthlyOverview({ session, onNavigate, darkMode, toggleD
               </div>
 
               {dataLoading ? (
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold py-8">Loading...</p>
+                <div className="flex justify-center py-12">
+                  <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                </div>
               ) : transactions.length === 0 ? (
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold py-8">
-                  No records for {MONTH_NAMES[month]} {year}.
-                </p>
+                <div className="flex flex-col items-center py-12 gap-3 text-center">
+                  <span className="material-symbols-outlined text-on-surface-variant/30" style={{ fontSize: '40px' }}>event_note</span>
+                  <p className="text-sm font-bold text-on-surface-variant">No entries for {MONTH_NAMES[month]} {year}</p>
+                  <p className="text-xs text-on-surface-variant/60">Use the + buttons above to record your first transaction</p>
+                </div>
               ) : (
                 <div className="space-y-3">
                   {transactions.map(tx => (
